@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QSHE Days Lucky Wheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0A0907; --panel:#15110A; --panel2:#1C170E; --ivory:#F3EBD7; --muted:#B3A68A; --line:rgba(212,175,55,.3);
+  --gold:#D4AF37; --gold-hi:#FFEFB0; --gold-ink:#1A1306; --danger:#EC8A78;
+  --foil:linear-gradient(135deg,#7E5E17 0%,#D8B24A 22%,#FFF0B5 45%,#E2BC55 62%,#8E6A1A 100%);
+  --roman:"Prompt","Noto Sans Thai",system-ui,sans-serif;
+  --serif:"Prompt","Noto Sans Thai",system-ui,sans-serif;
+  --body:"Prompt","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+  --display:"Playfair Display","Prompt",Georgia,serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0907;--panel:#15110A;--ivory:#F3EBD7}}
+:root[data-theme="dark"]{--bg:#0A0907;--panel:#15110A;--ivory:#F3EBD7}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ivory);font-family:var(--body);font-weight:400;font-size:16px;line-height:1.65}
+/* spotlights */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 38% 70% at 18% -8%,rgba(255,236,170,.13),transparent 70%),
+    radial-gradient(ellipse 38% 70% at 82% -8%,rgba(255,236,170,.13),transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 110%,rgba(140,30,30,.22),transparent 70%)}
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:22px 20px 56px}
+.wrap.wide{max-width:980px}
+.foil{background:var(--foil);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--roman);font-weight:400;letter-spacing:4px;font-size:12px;color:var(--gold)}
+.brand #who{font-family:var(--serif);letter-spacing:0;font-size:15px;color:var(--muted)}
+.steps{display:flex;justify-content:center;gap:18px;margin:18px 0 8px;color:rgba(212,175,55,.3);font-size:14px}
+.steps span.on{color:var(--gold);text-shadow:0 0 10px rgba(212,175,55,.7)}
+.page{display:none}.page.on{display:block;animation:fade .5s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rule{display:flex;align-items:center;gap:12px;color:var(--gold);margin:14px auto;max-width:280px}
+.rule::before,.rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.center{text-align:center}
+.eyebrow{font-family:var(--roman);font-weight:500;letter-spacing:6px;font-size:11px;color:var(--gold)}
+.marquee{font-family:var(--display);font-weight:700;font-size:clamp(50px,15vw,80px);line-height:1;margin:12px 0 6px;letter-spacing:1px;filter:drop-shadow(0 4px 18px rgba(212,175,55,.25))}
+.lede{font-family:var(--serif);font-weight:400;font-size:18px;color:var(--ivory);margin:0 auto;max-width:34ch}
+h2{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 8px;color:var(--gold)}
+h3{font-family:var(--serif);font-weight:500;letter-spacing:1px;font-size:19px;margin:22px 0 8px;color:var(--gold)}
+p{margin:0 0 12px}
+.muted{color:var(--muted)}.small{font-size:14px}
+input,select,textarea{font:inherit;font-weight:400;color:var(--ivory);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:4px;padding:10px 12px;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(212,175,55,.2)}
+select option{background:#15110A}
+textarea{min-height:120px;font-size:14px}
+label.f{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
+.big-input{font-family:var(--roman);font-size:30px;font-weight:500;text-align:center;letter-spacing:6px;padding:16px;border:1px solid var(--gold);background:rgba(212,175,55,.05)}
+button{font:inherit;font-weight:500;cursor:pointer;border-radius:4px;border:1px solid var(--line);background:transparent;color:var(--ivory);padding:10px 16px}
+button:hover{border-color:var(--gold);color:var(--gold-hi)}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:3px}
+.btn-gold{background:var(--foil);background-size:160% 160%;color:var(--gold-ink);border:0;font-family:var(--serif);font-weight:500;letter-spacing:1px;font-size:18px;padding:15px 22px;width:100%;margin-top:18px;
+  box-shadow:0 10px 30px rgba(212,175,55,.25),inset 0 1px 0 rgba(255,255,255,.5);transition:background-position .6s}
+.btn-gold:hover{color:var(--gold-ink);background-position:100% 0}
+.btn-small{width:auto;margin:0;font-size:15px;padding:8px 14px}
+.linkbtn{border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:6px}
+.danger{color:var(--danger)}
+.armed{background:var(--danger)!important;color:#1A0A06!important;border-color:var(--danger)!important}
+.msg{min-height:1.5em;margin-top:12px;font-size:15px}
+.msg.err{color:var(--danger)}.msg.ok{color:var(--gold-hi)}
+
+/* invitation card */
+.invite{position:relative;margin-top:14px;background:linear-gradient(180deg,#17120A,#0E0B07);padding:10px;border-radius:6px;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.invite::before{content:"";position:absolute;inset:0;border-radius:6px;padding:1.5px;background:var(--foil);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.invite .inner{border:1px solid rgba(212,175,55,.45);padding:30px 22px 24px;text-align:center;position:relative}
+.corner{position:absolute;width:26px;height:26px;border-color:var(--gold);border-style:solid}
+.corner.tl{top:6px;left:6px;border-width:2px 0 0 2px}.corner.tr{top:6px;right:6px;border-width:2px 2px 0 0}
+.corner.bl{bottom:6px;left:6px;border-width:0 0 2px 2px}.corner.br{bottom:6px;right:6px;border-width:0 2px 2px 0}
+.invite .ask{font-family:var(--serif);font-weight:400;letter-spacing:1px;color:var(--muted);font-size:16px}
+.invite .name{font-family:var(--serif);font-weight:500;font-size:clamp(30px,8vw,40px);line-height:1.2;margin:6px 0 2px}
+.invite .dept{color:var(--muted);font-size:15px}
+.invite .ev{font-family:var(--roman);font-weight:600;font-size:clamp(40px,11vw,56px);line-height:1.05;margin:4px 0;letter-spacing:3px}
+.invite .msgtxt{font-family:var(--serif);font-weight:400;font-size:15px;white-space:pre-line;margin:10px auto 0;max-width:36ch}
+.details{display:grid;grid-template-columns:repeat(3,1fr);margin-top:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.details div{padding:12px 6px}
+.details div+div{border-left:1px solid var(--line)}
+.details dt{font-family:var(--roman);font-size:11px;letter-spacing:3px;color:var(--gold)}
+.details dd{margin:4px 0 0;font-family:var(--serif);font-weight:400;font-size:15px;line-height:1.35}
+@media (max-width:420px){.details{grid-template-columns:1fr}.details div+div{border-left:0;border-top:1px solid var(--line)}}
+.admit{display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;gap:12px;text-align:left}
+.admit .n{font-family:var(--display);font-weight:700;font-size:60px;line-height:.9}
+.admit .l{font-size:14px;color:var(--muted)}
+.admit .id{font-family:var(--roman);letter-spacing:2px;font-size:13px;color:var(--muted);text-align:right}
+
+/* wheel page */
+.rights{text-align:center;margin-top:8px}
+.rights .n{font-family:var(--display);font-weight:700;font-size:84px;line-height:1}
+.rights .l{font-family:var(--serif);font-weight:400;letter-spacing:2px;font-size:16px;color:var(--ivory)}
+.wheel-box{position:relative;width:min(370px,88vw);aspect-ratio:1;margin:30px auto 10px}
+.wheel-box::before{content:"";position:absolute;inset:-22px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.22),transparent 68%);pointer-events:none}
+.wheel{position:absolute;inset:0;border-radius:50%;will-change:transform;
+  box-shadow:0 0 0 6px #0A0907,0 0 0 10px #C9A23E,0 0 0 12px #6E5212,0 0 40px rgba(212,175,55,.35),0 30px 60px rgba(0,0,0,.7)}
+.wheel svg{width:100%;height:100%;display:block}
+.bulbs{position:absolute;inset:-9px;pointer-events:none;z-index:2;container-type:inline-size}
+.bulbs i{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#FFF3C8;box-shadow:0 0 8px 2px rgba(255,230,150,.8)}
+.bulbs.run i:nth-child(odd){animation:blink .5s steps(1) infinite}
+.bulbs.run i:nth-child(even){animation:blink .5s steps(1) infinite .25s}
+@keyframes blink{50%{opacity:.25;box-shadow:none}}
+.pointer{position:absolute;left:50%;top:-26px;width:36px;height:50px;margin-left:-18px;z-index:4;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));transform-origin:50% 22%}
+.pointer.tick{animation:tk .12s ease-out}
+@keyframes tk{50%{transform:rotate(-14deg)}}
+.hub{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;border-radius:50%;padding:0;
+  border:3px solid transparent;background:radial-gradient(circle at 35% 30%,#2A2213,#0A0907 70%) padding-box,var(--foil) border-box;
+  font-family:var(--serif);font-weight:500;letter-spacing:2px;font-size:clamp(18px,5vw,22px);line-height:1.1;color:var(--gold-hi);box-shadow:0 8px 20px rgba(0,0,0,.7)}
+.hub:hover{color:#fff}
+.hub:disabled{opacity:1;color:#6F6550}
+.hist{margin-top:26px}
+.hitem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.hitem .p{font-family:var(--serif);font-weight:500;font-size:16px}
+.hitem .c{font-family:var(--roman);letter-spacing:2px;font-size:14px;color:var(--muted)}
+.tag{display:inline-block;font-size:13px;padding:2px 12px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.wait{border-color:var(--gold);color:var(--gold-hi)}
+.tag.done{background:var(--foil);color:var(--gold-ink);border:0}
+.notice{border:1px solid var(--line);border-radius:4px;padding:12px 14px;font-size:14px;margin-top:16px;color:var(--muted);text-align:center}
+
+/* reveal: envelope then card */
+.modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(ellipse at 50% 30%,rgba(60,45,15,.6),rgba(0,0,0,.92) 70%)}
+.modal.on{display:flex}
+.env-wrap{text-align:center}
+.env-wrap .cap{font-family:var(--serif);font-weight:400;letter-spacing:1px;font-size:21px;color:var(--ivory);margin-bottom:22px}
+.envelope{position:relative;width:min(300px,76vw);aspect-ratio:1.55;margin:0 auto;background:var(--foil);border-radius:4px;box-shadow:0 24px 50px rgba(0,0,0,.7);animation:float 1.4s ease-in-out infinite}
+.envelope::before{content:"";position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 58%);background:linear-gradient(180deg,#B88E2E,#E8C766);border-radius:4px 4px 0 0}
+.envelope .seal{position:absolute;left:50%;top:58%;width:48px;height:48px;margin:-24px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#B3342A,#6A120D);
+  display:grid;place-items:center;font-family:var(--roman);font-weight:700;color:#F6D7A0;font-size:22px;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+@keyframes float{50%{transform:translateY(-6px) rotate(-1deg)}}
+.rcard{position:relative;width:min(430px,100%);padding:34px 26px 24px;text-align:center;background:linear-gradient(180deg,#1A150C,#0C0A06);border-radius:6px;animation:open .7s cubic-bezier(.2,1.2,.4,1)}
+.rcard::before{content:"";position:absolute;inset:0;border-radius:6px;padding:2px;background:var(--foil);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+@keyframes open{0%{transform:rotateX(80deg) scale(.7);opacity:0}100%{transform:none;opacity:1}}
+.rcard .t{font-family:var(--serif);font-weight:400;letter-spacing:1px;color:var(--muted);font-size:16px}
+.rcard .p{font-family:var(--serif);font-weight:600;font-size:clamp(30px,8vw,42px);line-height:1.15;margin:10px 0 6px}
+.rcard .code{display:inline-block;margin:10px 0 4px;font-family:var(--roman);font-weight:500;font-size:26px;letter-spacing:4px;color:var(--gold-hi);padding:8px 18px;border:1px solid var(--gold)}
+.rcard .btn-gold{margin-top:22px}
+.rcard.none .p{color:var(--ivory);background:none;-webkit-text-fill-color:currentColor}
+#confetti{position:fixed;inset:0;z-index:41;pointer-events:none;width:100%;height:100%}
+@media (prefers-reduced-motion:reduce){.page.on,.rcard,.envelope{animation:none}.bulbs.run i{animation:none}.pointer.tick{animation:none}}
+
+/* admin */
+.panel{background:rgba(21,17,10,.85);border:1px solid var(--line);border-radius:6px;padding:20px;margin-top:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.prow{display:grid;grid-template-columns:1fr 100px auto;gap:8px;margin-bottom:8px;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--gold);font-weight:500}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--foil);width:0}
+.stats{display:flex;flex-wrap:wrap;gap:26px;margin-bottom:8px}
+.stats div{font-size:14px;color:var(--muted)}
+.stats b{display:block;font-family:var(--roman);font-size:28px;color:var(--gold-hi)}
+/* ---------- envelope invitation ---------- */
+.scene{position:relative;margin:0 -20px;padding:175px 20px 20px;overflow:hidden;-webkit-mask:linear-gradient(#000 92%,transparent);mask:linear-gradient(#000 92%,transparent)}
+.bokeh{position:absolute;inset:0;pointer-events:none;z-index:0}
+.bokeh b{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,226,140,.85),rgba(214,160,40,.35) 55%,transparent 72%);filter:blur(2px);animation:drift 9s ease-in-out infinite alternate}
+.bokeh i{position:absolute;color:#FFF3C8;font-style:normal;font-size:12px;text-shadow:0 0 8px #FFD76A;animation:twinkle 2.4s ease-in-out infinite}
+@keyframes drift{to{transform:translate(12px,-18px)}}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(.6)}50%{opacity:1;transform:scale(1.1)}}
+.env{position:relative;z-index:1;width:min(360px,86vw);aspect-ratio:1.42;margin:0 auto;perspective:1100px;cursor:pointer}
+.env-back{position:absolute;inset:0;border-radius:6px;z-index:0;
+  background:linear-gradient(180deg,#2A2418 0%,#16130D 40%,#0E0C08 100%);box-shadow:0 30px 60px rgba(0,0,0,.75),0 0 0 1px rgba(212,175,55,.45),0 0 40px rgba(212,175,55,.12)}
+.env-back::before{content:"";position:absolute;inset:6px 6px 40% 6px;border-radius:4px;opacity:.55;
+  background:repeating-linear-gradient(45deg,rgba(212,175,55,.35) 0 2px,transparent 2px 12px),repeating-linear-gradient(-45deg,rgba(212,175,55,.35) 0 2px,transparent 2px 12px)}
+.letter{position:absolute;left:5%;right:5%;bottom:3%;height:94%;z-index:2;border-radius:8px;
+  background:linear-gradient(180deg,#FBF8F0,#EFE8D8);box-shadow:0 -6px 24px rgba(0,0,0,.35);
+  transition:transform 1.1s cubic-bezier(.2,.8,.2,1);text-align:center;padding:18px 16px 0;color:#6F5214}
+.env.rise .letter{transform:translateY(-66%)}
+.letter .l-ask{font-weight:400;letter-spacing:1px;font-size:14px;color:#7D6634}
+.letter .l-name{font-weight:500;font-size:clamp(22px,6.4vw,28px);line-height:1.25;margin-top:4px;
+  background:linear-gradient(100deg,#7A5712 0%,#B98E2E 30%,#F6DE92 48%,#B98E2E 66%,#7A5712 100%);background-size:250% 100%;background-position:100% 0;
+  -webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;transform:translateY(6px);letter-spacing:4px}
+.env.named .l-name{animation:namein 1.1s ease forwards,shine 2.2s ease .5s forwards}
+@keyframes namein{to{opacity:1;transform:none;letter-spacing:0}}
+@keyframes shine{from{background-position:100% 0}to{background-position:0 0}}
+.letter .l-dept{font-size:14px;font-weight:400;color:#7D6634;min-height:1.2em}
+.letter .l-title{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(32px,9vw,40px);line-height:1.1;margin-top:8px;
+  background:linear-gradient(135deg,#7A5712,#C9A24A 45%,#8A6417);-webkit-background-clip:text;background-clip:text;color:transparent}
+.letter .l-title.thai{font-family:"Prompt",sans-serif;font-weight:500;font-size:clamp(26px,7vw,32px);letter-spacing:2px}
+.letter .l-line{width:60%;height:1px;margin:8px auto;background:linear-gradient(90deg,transparent,#B98E2E,transparent)}
+.letter .l-date{font-weight:500;letter-spacing:1px;font-size:15px;color:#7A5712}
+.env-front{position:absolute;inset:0;z-index:3;border-radius:6px;pointer-events:none;
+  background:linear-gradient(180deg,#1E1A13,#0F0D09);clip-path:polygon(0 0,50% 62%,100% 0,100% 100%,0 100%)}
+.env-front svg,.flap .face svg{position:absolute;inset:0;width:100%;height:100%}
+.env-front::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.06),transparent 45%);clip-path:polygon(0 0,50% 62%,0 100%)}
+.env-front::after{content:"";position:absolute;inset:0;background:linear-gradient(245deg,rgba(255,255,255,.04),transparent 45%);clip-path:polygon(100% 0,50% 62%,100% 100%)}
+.flap{position:absolute;left:0;right:0;top:0;height:64%;z-index:4;transform-origin:50% 0;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.4,.1,.3,1)}
+.flap .face{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px 6px 0 0}
+.flap .front{background:linear-gradient(180deg,#3A3326,#1B1812)}
+.flap .back{transform:rotateX(180deg);background:
+  repeating-linear-gradient(45deg,rgba(122,87,18,.55) 0 2px,transparent 2px 12px),
+  repeating-linear-gradient(-45deg,rgba(122,87,18,.55) 0 2px,transparent 2px 12px),
+  linear-gradient(135deg,#8E6A1A,#F2D78A 50%,#9C7620)}
+.env.open .flap{transform:rotateX(180deg)}
+.env.flap-behind .flap{z-index:1}
+.wax{position:absolute;left:50%;top:64%;width:70px;height:70px;margin:-35px 0 0 -35px;z-index:6;padding:0;border:0;background:none;cursor:pointer}
+.wax .half{position:absolute;inset:0;transition:transform .7s cubic-bezier(.3,.6,.4,1),opacity .7s}
+.wax .half.l{clip-path:polygon(0 0,54% 0,44% 38%,56% 60%,46% 100%,0 100%)}
+.wax .half.r{clip-path:polygon(54% 0,100% 0,100% 100%,46% 100%,56% 60%,44% 38%)}
+.wax .disc{position:absolute;inset:0;border-radius:47% 53% 50% 50%/52% 46% 54% 48%;
+  background:radial-gradient(circle at 35% 30%,#C4463A,#8E1B14 55%,#5C0E0A);box-shadow:0 4px 10px rgba(0,0,0,.6),inset 0 -3px 6px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,160,140,.35)}
+.wax .disc::before{content:"";position:absolute;inset:11px;border-radius:50%;border:2px solid rgba(60,6,4,.55);box-shadow:inset 0 1px 0 rgba(255,170,150,.3)}
+.wax .disc::after{content:"Q";position:absolute;inset:0;display:grid;place-items:center;font-weight:600;font-size:26px;color:#E9B6A6;text-shadow:0 -1px 0 rgba(0,0,0,.5),0 1px 0 rgba(255,200,180,.3)}
+.wax:hover .disc{filter:brightness(1.08)}
+.env:not(.crack) .wax{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+.env.crack .wax{pointer-events:none}
+.env.crack .wax .half.l{transform:translate(-40px,70px) rotate(-40deg);opacity:0}
+.env.crack .wax .half.r{transform:translate(40px,70px) rotate(35deg);opacity:0}
+.tap-hint{position:relative;z-index:1;text-align:center;margin-top:22px;font-weight:500;letter-spacing:2px;color:var(--gold);transition:opacity .4s}
+.env.crack~.tap-hint{opacity:0}
+.inv-details{opacity:0;transform:translateY(14px);transition:opacity .8s,transform .8s;pointer-events:none;text-align:center}
+.inv-details.show{opacity:1;transform:none;pointer-events:auto}
+.inv-details .msgtxt{font-weight:400;font-size:15px;white-space:pre-line;margin:0 auto 4px;max-width:36ch;color:var(--ivory)}
+.inv-details .admit{border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion:reduce){.letter,.flap,.wax .half,.inv-details{transition:none}.env .wax,.bokeh b,.bokeh i{animation:none}.env.named .l-name{animation:none;opacity:1;transform:none;letter-spacing:0}}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="brand"><span>THE GOLDEN Q</span><span id="who"></span></div>
+  <div class="steps" id="steps" aria-hidden="true"><span>✦</span><span>✦</span><span>✦</span></div>
+
+  <!-- page 1 -->
+  <section class="page center" id="p1">
+    <div class="eyebrow" style="margin-top:26px">QSHE DAY 2026</div>
+    <div class="marquee foil">The<br>Golden Q</div>
+    <div class="rule">✦</div>
+    <p class="lede">ทุกการปรับปรุง คือผลงานชิ้นเอก<br><span class="muted small">ทุกบทเรียนที่เรียนจบ พาคุณมาถึงพรมแดงวันนี้</span></p>
+    <div style="margin-top:34px;text-align:left">
+      <label for="emp" class="f center">กรอกเลขพนักงานเพื่อรับบัตรเชิญ</label>
+      <input id="emp" class="big-input" inputmode="numeric" autocomplete="off" placeholder="500123">
+      <button class="btn-gold" id="btn-enter">เข้าสู่พรมแดง</button>
+      <div class="msg center" id="p1-msg" role="status"></div>
+    </div>
+  </section>
+
+  <!-- page 2 -->
+  <section class="page" id="p2">
+    <div class="scene">
+      <div class="bokeh" id="bokeh" aria-hidden="true"></div>
+      <div class="env" id="envelope">
+        <div class="env-back"></div>
+        <div class="letter" aria-live="polite">
+          <div class="l-ask">ขอเรียนเชิญ</div>
+          <div class="l-name" id="i-name"></div>
+          <div class="l-dept" id="i-dept"></div>
+          <div class="l-title">The Golden Q</div>
+          <div class="l-line"></div>
+          <div class="l-date" id="i-date-l"></div>
+        </div>
+        <div class="env-front"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,100 50,62 100,100" fill="none" stroke="rgba(212,175,55,.35)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg></div>
+        <div class="flap"><div class="face front"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,0 50,100 100,0" fill="none" stroke="#D4AF37" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg></div><div class="face back"></div></div>
+        <button class="wax" id="wax" aria-label="แตะตราประทับเพื่อเปิดซองจดหมาย"><span class="half l"><span class="disc"></span></span><span class="half r"><span class="disc"></span></span></button>
+      </div>
+      <p class="tap-hint">แตะตราประทับเพื่อเปิดซอง</p>
+    </div>
+    <div class="inv-details" id="inv-details">
+      <div class="rule">✦</div>
+      <div class="msgtxt" id="i-msg"></div>
+      <dl class="details">
+        <div><dt>DATE</dt><dd id="i-date"></dd></div>
+        <div><dt>TIME</dt><dd id="i-time"></dd></div>
+        <div><dt>VENUE</dt><dd id="i-place"></dd></div>
+      </dl>
+      <div class="admit">
+        <div><div class="n foil" id="i-rights">0</div><div class="l">สิทธิ์ลุ้นรางวัลของคุณ</div></div>
+        <div class="id">ADMIT ONE<br><span id="i-emp"></span></div>
+      </div>
+      <button class="btn-gold" id="btn-to-wheel">ไปหมุนวงล้อรางวัล</button>
+    </div>
+  </section>
+
+  <!-- page 3 -->
+  <section class="page" id="p3">
+    <div class="rights"><div class="n foil" id="w-left">0</div><div class="l" id="w-left-l">สิทธิ์คงเหลือ</div></div>
+    <p class="muted small center" style="margin:2px 0 0" id="w-sub"></p>
+    <div class="wheel-box">
+      <svg class="pointer" id="pointer" viewBox="0 0 36 50" aria-hidden="true">
+        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF0B5"/><stop offset=".5" stop-color="#D8B24A"/><stop offset="1" stop-color="#7E5E17"/></linearGradient></defs>
+        <path d="M18 50 L3 12 A15.5 15.5 0 1 1 33 12 Z" fill="url(#pg)" stroke="#0A0907" stroke-width="2"/><circle cx="18" cy="16" r="5" fill="#8E1B14"/></svg>
+      <div class="wheel" id="wheel"></div>
+      <div class="bulbs" id="bulbs"></div>
+      <button class="hub" id="btn-spin">หมุน</button>
+    </div>
+    <div class="msg center" id="p3-msg" role="status"></div>
+    <div class="hist">
+      <h3 class="center">รางวัลของคุณ</h3>
+      <div id="hist"><p class="muted small center">ยังไม่มีรางวัล หมุนวงล้อเพื่อลุ้นได้เลย</p></div>
+      <div class="notice">แสดงรหัสรางวัลที่จุดแลกของรางวัลในวันงาน ระบบบันทึกผลไว้แล้ว กลับมาเปิดหน้านี้ได้ตลอด</div>
+    </div>
+    <div class="row" style="justify-content:space-between;margin-top:14px">
+      <button class="linkbtn" id="btn-back-inv">ดูบัตรเชิญ</button>
+      <button class="linkbtn" id="btn-next-person" hidden>คนถัดไป</button>
+    </div>
+  </section>
+
+  <!-- admin -->
+  <section class="page" id="pa">
+    <div class="row" style="justify-content:space-between"><h2 style="font-size:30px;margin:0" class="foil">สำหรับผู้จัดงาน</h2><div class="row"><button id="btn-logout" hidden>ออกจากระบบผู้จัดงาน</button><button id="btn-admin-close">กลับหน้าผู้ใช้</button></div></div>
+
+    <div class="panel" id="login-panel">
+      <h2>เข้าสู่ระบบผู้จัดงาน</h2>
+      <p class="muted small">ใช้อีเมลและรหัสผ่านที่สร้างไว้ใน Firebase Authentication</p>
+      <div class="grid2">
+        <div><label class="f" for="lg-email">อีเมล</label><input id="lg-email" type="email" autocomplete="username"></div>
+        <div><label class="f" for="lg-pass">รหัสผ่าน</label><input id="lg-pass" type="password" autocomplete="current-password"></div>
+      </div>
+      <button class="btn-gold btn-small" id="lg-btn" style="margin-top:12px">เข้าสู่ระบบ</button>
+      <div class="msg" id="lg-msg"></div>
+    </div>
+
+    <div id="admin-body" hidden>
+
+    <div class="panel">
+      <h2>ภาพรวม</h2>
+      <div class="stats" id="a-stats"></div>
+      <div class="scroll"><table id="a-prize-status"></table></div>
+    </div>
+
+    <div class="panel">
+      <h2>จุดแลกรางวัล</h2>
+      <p class="muted small">ค้นหาด้วยเลขพนักงานหรือรหัสรางวัล</p>
+      <div class="row"><input id="a-q" style="flex:1;min-width:180px" placeholder="เลขพนักงาน หรือ รหัส เช่น QD-7K2PX"><button id="a-find">ค้นหา</button></div>
+      <div id="a-found" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>นำเข้ารายชื่อและคะแนน</h2>
+      <p class="muted small">วางตารางจาก Excel หรืออัปโหลด .xlsx/.csv คอลัมน์: รหัส, ชื่อ, หน่วยงาน, Token และใส่คอลัมน์ "สิทธิ์" ได้ถ้าต้องการกำหนดเอง (ไม่ใส่ ระบบคำนวณจากกติกาด้านล่าง)</p>
+      <textarea id="a-paste" placeholder="รหัส	ชื่อ	หน่วยงาน	Token	สิทธิ์"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="a-parse">ตรวจข้อมูลที่วาง</button>
+        <button id="a-file-btn">อัปโหลดไฟล์</button><input type="file" id="a-file" accept=".xlsx,.xls,.csv,.txt" hidden>
+      </div>
+      <div class="msg" id="a-import-msg"></div>
+      <button id="a-save-roster" class="btn-gold btn-small" hidden>บันทึกรายชื่อเข้าระบบ</button>
+      <div class="bar" id="a-bar" hidden><i></i></div>
+    </div>
+
+    <div class="panel">
+      <h2>ตั้งค่างานและรางวัล</h2>
+      <div class="grid2">
+        <div><label class="f" for="c-title">ชื่องาน</label><input id="c-title"></div>
+        <div><label class="f" for="c-date">วันที่</label><input id="c-date"></div>
+        <div><label class="f" for="c-time">เวลา</label><input id="c-time"></div>
+        <div><label class="f" for="c-place">สถานที่</label><input id="c-place"></div>
+      </div>
+      <label class="f" for="c-msg" style="margin-top:10px">ข้อความเชิญ</label>
+      <textarea id="c-msg" style="min-height:70px"></textarea>
+      <h3>กติกาสิทธิ์ (ใช้เมื่อไฟล์ไม่มีคอลัมน์ "สิทธิ์")</h3>
+      <div class="grid2">
+        <div><label class="f" for="c-per">Token ต่อ 1 สิทธิ์</label><input id="c-per" type="number" min="1"></div>
+        <div><label class="f" for="c-bonus">สิทธิ์โบนัส</label><input id="c-bonus" type="number" min="0"></div>
+        <div><label class="f" for="c-bmin">ได้โบนัสเมื่อ Token ถึง</label><input id="c-bmin" type="number" min="0"></div>
+        <div><label class="f" for="c-bind">การยืนยันตัวตน</label>
+          <select id="c-bind"><option value="1">ผูกเลขพนักงานกับบัญชีผู้ใช้ (ใช้บนมือถือของตัวเอง)</option><option value="0">โหมดตู้ Kiosk (เครื่องกลางที่บูธ)</option></select></div>
+      </div>
+      <h3>รางวัลบนวงล้อ</h3>
+      <p class="muted small">ชื่อรางวัล (ไม่เกิน 15 ตัวอักษร) และจำนวน ระบบกระจายรางวัลตามสิทธิ์ที่เหลือ เพื่อไม่ให้รางวัลหมดเร็วหรือเหลือ</p>
+      <div id="c-prizes"></div>
+      <button id="c-add">เพิ่มรางวัล</button>
+      <div style="margin-top:12px"><label class="f" for="c-cons">ช่องที่ไม่ได้รางวัล</label><input id="c-cons"></div>
+      <button class="btn-gold" id="c-save">บันทึกการตั้งค่า</button>
+      <div class="msg" id="c-msg-out"></div>
+    </div>
+
+    <div class="panel">
+      <h2>ส่งออกและรีเซ็ต</h2>
+      <div class="row">
+        <button id="a-export">ส่งออกรายชื่อผู้ได้รางวัล (CSV)</button>
+        <button id="a-reset" class="danger">ล้างผลการหมุนทั้งหมด</button>
+      </div>
+      <p class="muted small" style="margin-top:8px">ใช้ "ล้างผลการหมุน" หลังทดสอบระบบ ก่อนเปิดให้พนักงานใช้จริง รายชื่อและการตั้งค่าจะยังอยู่</p>
+      <div class="msg" id="a-msg"></div>
+      <textarea id="a-copy" readonly hidden></textarea>
+    </div>
+    </div>
+  </section>
+
+  <div style="text-align:center;margin-top:30px"><button class="linkbtn" id="btn-admin">สำหรับผู้จัดงาน</button></div>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="r-prize">
+  <div class="env-wrap" id="env">
+    <div class="cap">และรางวัลที่คุณได้รับคือ...</div>
+    <div class="envelope"><div class="seal">Q</div></div>
+  </div>
+  <div class="rcard" id="rcard" hidden>
+    <div class="t" id="r-t"></div>
+    <div class="p foil" id="r-prize"></div>
+    <div id="r-code-wrap"><div class="code" id="r-code"></div><div class="small muted">รหัสสำหรับแลกรางวัลวันงาน</div></div>
+    <div class="small muted" id="r-left" style="margin-top:10px"></div>
+    <button class="btn-gold" id="r-ok">ตกลง</button>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+
+<script type="module">
+/* =====================================================================
+   The Golden Q Lucky Wheel  (GitHub Pages + Firebase)
+   1) ใส่ค่า firebaseConfig จาก Firebase Console ด้านล่าง
+   2) ดูขั้นตอนทั้งหมดใน README.md
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCLkzc1Yz-Ar0xUoXqWWMP6Qp1jjeDoMqM",
+  authDomain: "golden-q-qshe.firebaseapp.com",
+  projectId: "golden-q-qshe",
+  storageBucket: "golden-q-qshe.firebasestorage.app",
+  messagingSenderId: "1071473345905",
+  appId: "1:1071473345905:web:c8d0a7d77021cef4d3e2d0",
+  measurementId: "G-69QLX89H87"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, limit, getDocs, onSnapshot, runTransaction, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Number(n||0).toLocaleString('th-TH');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function rnd(){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296}
+const uid8=()=>Math.random().toString(36).slice(2,10);
+const safeId=s=>String(s||'').trim().replace(/[^A-Za-z0-9_\-]/g,'_').slice(0,100);
+
+const DEFAULT_CFG={
+  event:{title:'QSHE Day 2026',date:'พฤศจิกายน 2569',time:'แจ้งภายหลัง',place:'แจ้งภายหลัง',
+    message:'ขอบคุณที่ร่วมเรียนรู้กับเรา ขอเชิญร่วมงาน QSHE Day 2026 และนำรหัสรางวัลมาแลกของที่จุดแลกรางวัลภายในงาน'},
+  rules:{per:50,bonus:0,bonusMin:250,bind:true},
+  prizes:[
+    {id:'p1',name:'กระบอกน้ำเก็บความเย็น',stock:2},
+    {id:'p2',name:'ร่มพับ QSHE Day',stock:10},
+    {id:'p3',name:'แก้ว Q Token',stock:85},
+    {id:'p4',name:'ถุงผ้ารักษ์โลก',stock:85}],
+  consolation:'ขอบคุณที่ร่วมลุ้น',
+  roster:{count:0,totalRights:0}
+};
+const clone=o=>JSON.parse(JSON.stringify(o));
+let cfg=clone(DEFAULT_CFG);
+let fs=null,auth=null,uid=null,isAdmin=false,started=false;
+let me=null,spinsUnsub=null,slotCounts={},spinning=false,rot=0;
+
+/* ---------- navigation ---------- */
+function go(p){
+  ['p1','p2','p3','pa'].forEach(x=>$(x).classList.toggle('on',x===p));
+  $('wrap').classList.toggle('wide',p==='pa');
+  $('steps').style.visibility=p==='pa'?'hidden':'visible';
+  const n={p1:1,p2:2,p3:3}[p]||0;
+  [...$('steps').children].forEach((d,i)=>d.classList.toggle('on',i<n));
+  $('btn-admin').hidden=p==='pa';
+  window.scrollTo(0,0);
+}
+function setMsg(el,t,kind){const m=$(el);m.className='msg'+(kind?' '+kind:'');m.textContent=t||''}
+
+/* ---------- init ---------- */
+function boot(){
+  go('p1');
+  if(String(firebaseConfig.apiKey).startsWith('ใส่')){setMsg('p1-msg','ยังไม่ได้ใส่ค่า firebaseConfig ในไฟล์ index.html ดูวิธีใน README.md','err');$('btn-enter').disabled=true;return}
+  setMsg('p1-msg','กำลังเชื่อมต่อระบบ...');$('btn-enter').disabled=true;
+  const app=initializeApp(firebaseConfig);auth=getAuth(app);fs=getFirestore(app);
+  onAuthStateChanged(auth,async u=>{
+    if(!u){try{await signInAnonymously(auth)}catch(e){setMsg('p1-msg','เชื่อมต่อไม่สำเร็จ ตรวจว่าเปิด Anonymous sign-in ใน Firebase แล้ว','err')}return}
+    uid=u.uid;
+    isAdmin=false;
+    if(!u.isAnonymous){try{isAdmin=(await getDoc(doc(fs,'admins',u.uid))).exists()}catch(e){}}
+    renderAdminGate();
+    if(!started){started=true;await start()}
+  });
+}
+async function start(){
+  onSnapshot(doc(fs,'config','main'),s=>{
+    if(s.exists()){const d=s.data();cfg={...clone(DEFAULT_CFG),...clone(d)};cfg.event={...DEFAULT_CFG.event,...(d.event||{})};cfg.rules={...DEFAULT_CFG.rules,...(d.rules||{})}}
+    renderInvite();renderWheel();if($('pa').classList.contains('on')&&isAdmin)renderAdminStats();
+  },()=>{});
+  await loadStats();
+  $('btn-enter').disabled=false;setMsg('p1-msg','');
+  if(cfg.rules.bind!==false){
+    try{const c=await getDocs(query(collection(fs,'claims'),where('uid','==',uid),limit(1)));
+      if(!c.empty){const id=c.docs[0].id;const e=await getDoc(doc(fs,'employees',id));if(e.exists()){await login(id,e.data());return}}}catch(e){}
+  }
+  $('emp').focus();
+}
+
+/* ---------- counters (1 document = cheap reads for 600 users) ---------- */
+let spinsUsed=0;
+async function loadStats(){
+  try{const s=await getDoc(doc(fs,'stats','spins'));const d=s.exists()?s.data():{};
+    spinsUsed=Number(d.count)||0;slotCounts={...(d.given||{})};}catch(e){}
+  renderWheel();
+}
+
+/* ---------- page 1 ---------- */
+async function enter(){
+  const id=safeId($('emp').value);
+  if(!id){setMsg('p1-msg','กรุณาใส่เลขพนักงาน','err');return}
+  $('btn-enter').disabled=true;setMsg('p1-msg','กำลังตรวจสอบ...');
+  try{
+    const e=await getDoc(doc(fs,'employees',id));
+    if(!e.exists()){setMsg('p1-msg','ไม่พบเลขพนักงานนี้ ตรวจสอบตัวเลขอีกครั้ง หรือติดต่อผู้จัดงาน','err');return}
+    if(cfg.rules.bind!==false){
+      const cref=doc(fs,'claims',id);
+      const c=await getDoc(cref);const owner=c.exists()?c.data().uid:null;
+      if(owner&&owner!==uid){setMsg('p1-msg','เลขพนักงานนี้ถูกใช้กับเครื่องอื่นแล้ว หากไม่ใช่คุณ โปรดติดต่อผู้จัดงาน','err');return}
+      if(!owner){
+        const mine=await getDocs(query(collection(fs,'claims'),where('uid','==',uid),limit(1)));
+        if(!mine.empty&&mine.docs[0].id!==id){setMsg('p1-msg',`เครื่องนี้ใช้กับเลขพนักงาน ${mine.docs[0].id} แล้ว 1 เครื่องใช้ได้ 1 เลขพนักงาน`,'err');return}
+        try{await setDoc(cref,{uid,empId:id,at:new Date().toISOString()})}
+        catch(err){setMsg('p1-msg','เลขพนักงานนี้ถูกใช้กับเครื่องอื่นแล้ว','err');return}
+      }
+    }
+    await login(id,e.data());
+  }catch(err){console.error(err);setMsg('p1-msg','เชื่อมต่อไม่สำเร็จ ลองอีกครั้ง','err')}
+  finally{$('btn-enter').disabled=false}
+}
+async function login(id,emp){
+  const ref=doc(fs,'spins',id);
+  const s=await getDoc(ref);
+  if(!s.exists())await setDoc(ref,{empId:id,name:emp.name,dept:emp.dept||'',used:0,results:[],codes:[]});
+  me={empId:id,emp,spins:(await getDoc(ref)).data()};
+  if(spinsUnsub)spinsUnsub();
+  spinsUnsub=onSnapshot(ref,sn=>{if(sn.exists()&&me&&me.empId===id){me.spins=sn.data();renderRights();renderHistory()}},()=>{});
+  $('who').textContent=emp.name;
+  $('btn-next-person').hidden=cfg.rules.bind!==false;
+  renderInvite();renderRights();renderHistory();setMsg('p1-msg','');
+  resetEnvelope(opened.has(id));
+  go('p2');
+}
+function logout(){if(spinsUnsub)spinsUnsub();spinsUnsub=null;me=null;$('who').textContent='';$('emp').value='';go('p1');$('emp').focus()}
+
+/* ---------- page 2 ---------- */
+function rightsTotal(){return me?Number(me.emp.rights)||0:0}
+function rightsLeft(){return me?Math.max(0,rightsTotal()-(Number(me.spins?.used)||0)):0}
+function renderInvite(){
+  const ev=cfg.event;
+  $('i-date-l').textContent=[ev.title||'QSHE Day 2026',ev.date].filter(Boolean).join('  |  ');
+  $('i-msg').textContent=ev.message||'';
+  $('i-date').textContent=ev.date||'-';$('i-time').textContent=ev.time||'-';$('i-place').textContent=ev.place||'-';
+  if(me){$('i-name').textContent='คุณ'+me.emp.name;$('i-dept').textContent=me.emp.dept||'';$('i-emp').textContent=me.empId;$('i-rights').textContent=fmt(rightsLeft())}
+}
+const opened=new Set();
+function buildBokeh(){
+  const b=$('bokeh');if(b.children.length)return;let h='';
+  for(let k=0;k<18;k++){const sz=10+rnd()*46;h+=`<b style="left:${(rnd()*100).toFixed(1)}%;top:${(rnd()*100).toFixed(1)}%;width:${sz.toFixed(0)}px;height:${sz.toFixed(0)}px;opacity:${(.15+rnd()*.45).toFixed(2)};animation-delay:-${(rnd()*9).toFixed(1)}s"></b>`}
+  for(let k=0;k<14;k++)h+=`<i style="left:${(rnd()*100).toFixed(1)}%;top:${(rnd()*100).toFixed(1)}%;animation-delay:-${(rnd()*2.4).toFixed(1)}s">✦</i>`;
+  b.innerHTML=h;
+}
+function resetEnvelope(open){
+  buildBokeh();$('envelope').className='env'+(open?' crack open flap-behind rise named':'');
+  $('inv-details').classList.toggle('show',!!open);
+}
+let opening=false;
+async function openEnvelope(){
+  const e=$('envelope');if(opening||e.classList.contains('crack'))return;
+  opening=true;audio();
+  if(reduced){resetEnvelope(true);if(me)opened.add(me.empId);opening=false;$('btn-to-wheel').focus();return}
+  e.classList.add('crack');tone(180,.08,'sawtooth',.08);tone(120,.12,'triangle',.08,.03);
+  await sleep(350);e.classList.add('open');tone(520,.3,'sine',.03);
+  await sleep(380);e.classList.add('flap-behind');
+  await sleep(250);e.classList.add('rise');
+  await sleep(950);e.classList.add('named');
+  [1047,1319,1568,2093].forEach((f,i)=>tone(f,.5,'sine',.05,i*.09));
+  await sleep(700);$('inv-details').classList.add('show');
+  if(me)opened.add(me.empId);opening=false;
+}
+
+/* ---------- page 3: wheel ---------- */
+let segs=[],wheelDirty=false;
+function buildSegs(){
+  const ps=cfg.prizes||[];const out=[];
+  ps.forEach(p=>{out.push({id:p.id,label:p.name});out.push({id:'none',label:cfg.consolation})});
+  if(!out.length)for(let i=0;i<6;i++)out.push({id:'none',label:cfg.consolation});
+  while(out.length<6)out.push(...out.slice(0,6-out.length));
+  return out;
+}
+function arc(cx,cy,r,a0,a1){
+  const p=a=>[cx+r*Math.sin(a*Math.PI/180),cy-r*Math.cos(a*Math.PI/180)];
+  const [x0,y0]=p(a0),[x1,y1]=p(a1);
+  return `M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${a1-a0>180?1:0} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z`;
+}
+function renderWheel(){
+  if(spinning){wheelDirty=true;return}
+  wheelDirty=false;segs=buildSegs();const n=segs.length,a=360/n,R=200;
+  let goldAlt=0,blackAlt=0;
+  const parts=segs.map((s,i)=>{
+    const prize=(cfg.prizes||[]).find(p=>p.id===s.id);
+    const out=prize&&(prize.stock-(slotCounts[prize.id]||0))<=0;
+    let fill,ink;
+    if(out){fill='#2B261C';ink='#7C715A'}
+    else if(prize){fill=goldAlt++%2?'url(#gB)':'url(#gA)';ink='#1A1306'}
+    else{fill=blackAlt++%2?'#16120B':'#0B0907';ink='#D9C79A'}
+    let label=out?'หมดแล้ว':(s.label||'');if(label.length>22)label=label.slice(0,21)+'…';
+    const fsz=Math.min(n>10?13:15,Math.max(9,112/(label.length*0.56)));
+    const mid=i*a+a/2;
+    return `<path d="${arc(R,R,R,i*a,(i+1)*a)}" fill="${fill}" stroke="#6E5212" stroke-width="1.5"/>
+      <text transform="rotate(${mid-90} ${R} ${R}) translate(${R+R*0.9} ${R})" text-anchor="end" dominant-baseline="middle" fill="${ink}"
+        font-family="Prompt, Noto Sans Thai, system-ui, sans-serif" font-weight="${prize?600:400}" font-size="${fsz.toFixed(1)}">${esc(label)}</text>`;
+  }).join('');
+  $('wheel').innerHTML=`<svg viewBox="0 0 400 400" role="img" aria-label="วงล้อรางวัล"><defs>
+    <linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8E6A1A"/><stop offset=".45" stop-color="#F6DC8A"/><stop offset=".7" stop-color="#D8B24A"/><stop offset="1" stop-color="#8E6A1A"/></linearGradient>
+    <linearGradient id="gB" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A88A4A"/><stop offset=".5" stop-color="#EBD9A8"/><stop offset="1" stop-color="#A88A4A"/></linearGradient>
+    <radialGradient id="vg" cx=".5" cy=".5" r=".5"><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>
+    ${parts}<circle cx="200" cy="200" r="200" fill="url(#vg)"/></svg>`;
+  $('wheel').style.transform=`rotate(${rot}deg)`;
+  const b=$('bulbs');if(!b.children.length){let h='';for(let k=0;k<24;k++){const ang=k*15*Math.PI/180;h+=`<i style="transform:translate(${(Math.sin(ang)*50).toFixed(2)}cqw,${(-Math.cos(ang)*50).toFixed(2)}cqw)"></i>`}b.innerHTML=h}
+}
+function renderRights(){
+  if(!me)return;
+  const left=rightsLeft();
+  $('w-left').textContent=fmt(left);
+  $('w-sub').textContent=`ใช้ไปแล้ว ${fmt(me.spins?.used||0)} จาก ${fmt(rightsTotal())} สิทธิ์`;
+  $('i-rights').textContent=fmt(left);
+  $('btn-spin').disabled=spinning||left<=0;
+  $('btn-spin').textContent=left<=0?'ครบแล้ว':'หมุน';
+  if(!spinning&&left<=0&&rightsTotal()>0)setMsg('p3-msg','ใช้สิทธิ์ครบแล้ว แล้วพบกันที่งาน');
+  if(!spinning&&rightsTotal()===0)setMsg('p3-msg','ยังไม่มีสิทธิ์หมุน เรียนหลักสูตรเพิ่มเพื่อสะสม Token');
+}
+function renderHistory(){
+  const all=me?.spins?.results||[];
+  const rs=all.filter(r=>r.prizeId!=='none').slice().reverse();
+  const cons=all.filter(r=>r.prizeId==='none').length;
+  $('hist').innerHTML=(rs.length?rs.map(r=>`<div class="hitem"><div><div class="p">${esc(r.name)}</div><div class="c">${esc(r.code)}</div></div>
+    <span class="tag ${r.redeemed?'done':'wait'}">${r.redeemed?'แลกแล้ว':'รอแลกวันงาน'}</span></div>`).join(''):'<p class="muted small center">ยังไม่มีรางวัล หมุนวงล้อเพื่อลุ้นได้เลย</p>')
+    +(cons?`<p class="muted small center" style="margin-top:8px">หมุนแล้วได้ "${esc(cfg.consolation)}" ${cons} ครั้ง</p>`:'');
+}
+
+/* ---------- spin: decide + record in one transaction ---------- */
+function genCode(){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';const b=new Uint32Array(5);crypto.getRandomValues(b);b.forEach(v=>s+=A[v%A.length]);return 'QD-'+s}
+async function spin(){
+  if(spinning||!me||rightsLeft()<=0)return;
+  spinning=true;renderRights();setMsg('p3-msg','กำลังหมุน...');audio();
+  let res=null;
+  try{
+    const ps=cfg.prizes||[];
+    await loadStats();const counts=slotCounts;const used=spinsUsed;
+    const rem=ps.map(p=>Math.max(0,(Number(p.stock)||0)-(counts[p.id]||0)));
+    const remStock=rem.reduce((a,b)=>a+b,0);
+    const remRights=Math.max(1,(Number(cfg.roster?.totalRights)||0)-used,remStock);
+    let r=rnd(),acc=0,pick=null;
+    for(let i=0;i<ps.length;i++){acc+=rem[i]/remRights;if(r<acc){pick=ps[i];break}}
+    const sref=doc(fs,'spins',me.empId);
+    res=await runTransaction(fs,async tx=>{
+      const s=await tx.get(sref);const cur=s.data()||{};
+      if((Number(cur.used)||0)>=rightsTotal())return null;
+      let slotRef=null,idx=-1;
+      if(pick){const start=counts[pick.id]||0;
+        for(let k=0;k<4&&start+k<pick.stock;k++){const ref=doc(fs,'slots',pick.id+'__'+(start+k));const d=await tx.get(ref);if(!d.exists()){slotRef=ref;idx=start+k;break}}}
+      const now=new Date().toISOString();
+      const out=slotRef?{prizeId:pick.id,name:pick.name,code:genCode(),at:now,redeemed:false}
+                       :{prizeId:'none',name:cfg.consolation,code:null,at:now,redeemed:false};
+      const results=[...(cur.results||[]),out];
+      const codes=out.code?[...(cur.codes||[]),out.code]:(cur.codes||[]);
+      tx.update(sref,{used:(Number(cur.used)||0)+1,results,codes});
+      if(slotRef)tx.set(slotRef,{prizeId:pick.id,idx,empId:me.empId,code:out.code,at:now});
+      tx.set(doc(fs,'stats','spins'),slotRef?{count:increment(1),given:{[pick.id]:increment(1)}}:{count:increment(1)},{merge:true});
+      return out;
+    });
+  }catch(e){console.error(e);setMsg('p3-msg','เชื่อมต่อไม่สำเร็จ ลองอีกครั้ง','err');spinning=false;renderRights();return}
+  if(!res){setMsg('p3-msg','ใช้สิทธิ์ครบแล้ว');spinning=false;renderRights();return}
+  await animateTo(res.prizeId);
+  spinning=false;loadStats();renderRights();renderHistory();setMsg('p3-msg','');
+  showResult(res);
+}
+
+/* ---------- animation & sound ---------- */
+let actx=null;
+function audio(){try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();return actx}catch(e){return null}}
+function tone(f,d,type='square',v=.05,w=0){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;const t=a.currentTime+w;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02)}
+function fanfare(){[523,659,784,1047].forEach((f,i)=>tone(f,i===3?.9:.18,'triangle',.12,i*.13))}
+async function animateTo(pid){
+  const n=segs.length,a=360/n;
+  const idxs=segs.map((s,i)=>s.id===pid?i:-1).filter(i=>i>=0);
+  const i=idxs.length?idxs[Math.floor(rnd()*idxs.length)]:0;
+  const center=i*a+a/2;
+  const base=((-center-rot)%360+360)%360;
+  const target=rot+360*(reduced?1:7)+base+(rnd()-.5)*a*.6;
+  const w=$('wheel');const dur=reduced?400:5600;$('bulbs').classList.add('run');
+  w.style.transition=`transform ${dur}ms cubic-bezier(.1,.62,.1,1)`;
+  void w.offsetWidth;w.style.transform=`rotate(${target}deg)`;
+  let last=null,run=true;
+  const loop=()=>{if(!run)return;
+    const m=new DOMMatrixReadOnly(getComputedStyle(w).transform);let ang=Math.atan2(m.b,m.a)*180/Math.PI;ang=(ang+360)%360;
+    const seg=Math.floor(((360-ang)%360)/a);
+    if(seg!==last){if(last!==null){tone(1300,.03,'square',.03);const p=$('pointer');p.classList.remove('tick');void p.offsetWidth;p.classList.add('tick')}last=seg}
+    requestAnimationFrame(loop)};
+  if(!reduced)requestAnimationFrame(loop);
+  await sleep(dur+60);run=false;$('bulbs').classList.remove('run');
+  rot=target;w.style.transition='none';
+}
+async function showResult(r){
+  const win=r.prizeId!=='none';
+  $('rcard').className='rcard'+(win?'':' none');$('rcard').hidden=true;
+  $('r-t').textContent=win?'ขอแสดงความยินดี คุณได้รับ':'ครั้งนี้ได้';
+  $('r-prize').textContent=r.name;
+  $('r-code-wrap').hidden=!win;$('r-code').textContent=r.code||'';
+  const left=rightsLeft();
+  $('r-left').textContent=left>0?`ยังเหลืออีก ${left} สิทธิ์`:'ใช้สิทธิ์ครบแล้ว แล้วพบกันที่งาน';
+  $('env').hidden=reduced;$('modal').classList.add('on');
+  if(!reduced){for(let k=0;k<14;k++)tone(90+rnd()*20,.09,'triangle',.09,k*.08);await sleep(1500)}
+  $('env').hidden=true;$('rcard').hidden=false;$('r-ok').focus();
+  if(win){fanfare();confetti()}else tone(330,.25,'triangle',.08);
+}
+function confetti(){
+  if(reduced)return;const c=$('confetti'),x=c.getContext('2d');const dpr=devicePixelRatio||1;
+  const W=c.width=innerWidth*dpr,H=c.height=innerHeight*dpr;
+  const cols=['#D4AF37','#FFF0B5','#B8892B','#F3EBD7','#8E6A1A'];
+  const ps=Array.from({length:180},()=>({x:W/2,y:H*.4,vx:(rnd()-.5)*W*.03,vy:-(rnd()*H*.03+H*.006),r:(5+rnd()*6)*dpr,a:rnd()*6.3,va:(rnd()-.5)*.3,c:cols[Math.floor(rnd()*cols.length)]}));
+  const t0=performance.now();
+  (function f(t){const k=t-t0;x.clearRect(0,0,W,H);
+    ps.forEach(p=>{p.vy+=H*.0007;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-k/3500);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(k<3500)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})(t0);
+}
+
+/* ---------- admin ---------- */
+function armed(btn,fn){let t=null;const label=btn.textContent;btn.addEventListener('click',()=>{
+  if(btn.classList.contains('armed')){clearTimeout(t);btn.classList.remove('armed');btn.textContent=label;fn();return}
+  btn.classList.add('armed');btn.textContent='กดอีกครั้งเพื่อยืนยัน';t=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=label},3000)})}
+function renderAdminGate(){
+  $('login-panel').hidden=isAdmin;$('admin-body').hidden=!isAdmin;$('btn-logout').hidden=!isAdmin;
+  if(isAdmin&&$('pa').classList.contains('on')){fillConfigForm();renderAdminStats()}
+}
+function openAdmin(){go('pa');renderAdminGate()}
+async function adminLogin(){
+  if(!auth){setMsg('lg-msg','ยังไม่ได้ใส่ค่า firebaseConfig ใน index.html','err');return}
+  setMsg('lg-msg','กำลังเข้าสู่ระบบ...');
+  try{
+    const c=await signInWithEmailAndPassword(auth,$('lg-email').value.trim(),$('lg-pass').value);
+    const ok=(await getDoc(doc(fs,'admins',c.user.uid))).exists();
+    if(!ok){setMsg('lg-msg','บัญชีนี้ยังไม่ได้เป็นผู้จัดงาน เพิ่ม UID นี้ในคอลเลกชัน admins: '+c.user.uid,'err');return}
+    setMsg('lg-msg','');
+  }catch(e){
+    const m={'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือยังไม่ได้สร้างบัญชีนี้ใน Firebase Authentication > Users',
+      'auth/user-not-found':'ยังไม่มีบัญชีนี้ใน Firebase Authentication > Users',
+      'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
+      'auth/operation-not-allowed':'ยังไม่ได้เปิด Email/Password ใน Firebase Authentication > Sign-in method',
+      'auth/unauthorized-domain':'ยังไม่ได้เพิ่มโดเมนนี้ใน Authentication > Settings > Authorized domains',
+      'auth/too-many-requests':'ลองผิดหลายครั้งเกินไป รอสักครู่แล้วลองใหม่',
+      'auth/invalid-api-key':'ค่า apiKey ใน firebaseConfig ไม่ถูกต้อง'};
+    setMsg('lg-msg',(m[e.code]||'เข้าสู่ระบบไม่สำเร็จ')+' ('+(e.code||e.message)+')','err');
+  }
+}
+async function adminLogout(){await signOut(auth);isAdmin=false;renderAdminGate();logout()}
+let draftPrizes=[];
+function fillConfigForm(){
+  const e=cfg.event,r=cfg.rules;
+  $('c-title').value=e.title;$('c-date').value=e.date;$('c-time').value=e.time;$('c-place').value=e.place;$('c-msg').value=e.message;
+  $('c-per').value=r.per;$('c-bonus').value=r.bonus;$('c-bmin').value=r.bonusMin;$('c-bind').value=r.bind===false?'0':'1';
+  $('c-cons').value=cfg.consolation;
+  draftPrizes=clone(cfg.prizes||[]);renderPrizeRows();
+}
+function renderPrizeRows(){
+  $('c-prizes').innerHTML=draftPrizes.map((p,i)=>`<div class="prow">
+    <input aria-label="ชื่อรางวัล" data-i="${i}" data-f="name" value="${esc(p.name)}">
+    <input aria-label="จำนวน" type="number" min="0" data-i="${i}" data-f="stock" value="${p.stock}">
+    <button class="danger" data-del="${i}">ลบ</button></div>`).join('');
+  $('c-prizes').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{const p=draftPrizes[+inp.dataset.i];p[inp.dataset.f]=inp.dataset.f==='stock'?Math.max(0,+inp.value||0):inp.value});
+  $('c-prizes').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+    const p=draftPrizes[+b.dataset.del];
+    if(slotCounts[p.id]){setMsg('c-msg-out','รางวัลนี้มีผู้ได้รับแล้ว ลบไม่ได้ ปรับจำนวนแทน','err');return}
+    draftPrizes.splice(+b.dataset.del,1);renderPrizeRows()});
+}
+async function saveConfig(){
+  for(const p of draftPrizes){if((slotCounts[p.id]||0)>p.stock){setMsg('c-msg-out',`"${p.name}" มีผู้ได้รับไปแล้ว ${slotCounts[p.id]} รางวัล ตั้งจำนวนต่ำกว่านี้ไม่ได้`,'err');return}}
+  const next={
+    event:{title:$('c-title').value.trim(),date:$('c-date').value.trim(),time:$('c-time').value.trim(),place:$('c-place').value.trim(),message:$('c-msg').value.trim()},
+    rules:{per:Math.max(1,+$('c-per').value||50),bonus:Math.max(0,+$('c-bonus').value||0),bonusMin:Math.max(0,+$('c-bmin').value||0),bind:$('c-bind').value==='1'},
+    prizes:draftPrizes.map(p=>({id:p.id,name:p.name.trim()||'รางวัล',stock:Math.max(0,+p.stock||0)})),
+    consolation:$('c-cons').value.trim()||'ขอบคุณที่ร่วมลุ้น',
+    roster:cfg.roster||{count:0,totalRights:0}
+  };
+  try{await setDoc(doc(fs,'config','main'),next);cfg=next;setMsg('c-msg-out','บันทึกแล้ว','ok');renderWheel();renderInvite()}
+  catch(e){setMsg('c-msg-out','บันทึกไม่สำเร็จ ตรวจสิทธิ์ผู้จัดงานและ Security Rules','err')}
+}
+async function renderAdminStats(){
+  await loadStats();const used=spinsUsed;
+  const tr=Number(cfg.roster?.totalRights)||0;
+  $('a-stats').innerHTML=`<div><b>${fmt(cfg.roster?.count)}</b>รายชื่อ</div><div><b>${fmt(tr)}</b>สิทธิ์ทั้งหมด</div><div><b>${fmt(used)}</b>หมุนไปแล้ว</div><div><b>${tr?Math.round(used/tr*100):0}%</b>ใช้สิทธิ์แล้ว</div>`;
+  $('a-prize-status').innerHTML='<tr><th>รางวัล</th><th class="num">แจกแล้ว</th><th class="num">ทั้งหมด</th></tr>'+(cfg.prizes||[]).map(p=>`<tr><td>${esc(p.name)}</td><td class="num">${slotCounts[p.id]||0}</td><td class="num">${p.stock}</td></tr>`).join('');
+}
+
+/* import roster */
+function parseDelimited(text){
+  text=text.replace(/^\uFEFF/,'');const lines=text.split(/\r?\n/).filter(l=>l.trim()!=='');if(!lines.length)return[];
+  const d=lines[0].includes('\t')?'\t':',';
+  return lines.map(line=>{if(d==='\t')return line.split('\t');const out=[];let cur='',q=false;
+    for(let i=0;i<line.length;i++){const c=line[i];if(q){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}else if(c==='"')q=true;else if(c===','){out.push(cur);cur=''}else cur+=c}
+    out.push(cur);return out});
+}
+let staged=null;
+function stage(rows){
+  rows=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(c=>c));
+  if(rows.length<2){setMsg('a-import-msg','ไม่พบข้อมูล ต้องมีแถวหัวคอลัมน์และข้อมูลอย่างน้อย 1 แถว','err');return}
+  const h=rows[0].map(x=>x.toLowerCase());const f=re=>h.findIndex(x=>re.test(x));
+  const col={id:f(/รหัส|^id|emp|เลข/),name:f(/ชื่อ|name/),dept:f(/หน่วย|แผนก|ฝ่าย|ส่วน|dept|unit/),tok:f(/token|โทเค็น|คะแนน|แต้ม|score|point/),rt:f(/สิทธิ์|สิทธิ|right|spin/)};
+  if(col.id<0||col.name<0||(col.tok<0&&col.rt<0)){setMsg('a-import-msg','ต้องมีคอลัมน์ รหัส, ชื่อ และ Token (หรือ สิทธิ์) ในแถวแรก','err');return}
+  const per=Math.max(1,+$('c-per').value||cfg.rules.per),bonus=Math.max(0,+$('c-bonus').value||0),bmin=+$('c-bmin').value||cfg.rules.bonusMin;
+  const seen=new Set();let dup=0;const list=[];
+  rows.slice(1).forEach(r=>{
+    const id=safeId(r[col.id]);if(!id||!r[col.name])return;if(seen.has(id)){dup++;return}seen.add(id);
+    const tokens=col.tok>=0?Math.max(0,parseFloat(String(r[col.tok]??'').replace(/,/g,''))||0):0;
+    let rights=col.rt>=0&&r[col.rt]!==''?Math.max(0,Math.floor(+r[col.rt]||0)):(tokens>0?Math.floor(tokens/per)+(tokens>=bmin?bonus:0):0);
+    list.push({id,name:r[col.name],dept:col.dept>=0?r[col.dept]:'',tokens,rights});
+  });
+  staged=list;
+  setMsg('a-import-msg',`พร้อมบันทึก ${fmt(list.length)} คน รวม ${fmt(list.reduce((a,p)=>a+p.rights,0))} สิทธิ์${dup?` (ข้ามรหัสซ้ำ ${dup} แถว)`:''}`,'ok');
+  $('a-save-roster').hidden=false;
+}
+async function saveRoster(){
+  if(!staged)return;const btn=$('a-save-roster');btn.disabled=true;$('a-bar').hidden=false;const bar=$('a-bar').firstElementChild;
+  try{
+    for(let i=0;i<staged.length;i+=400){
+      const b=writeBatch(fs);
+      staged.slice(i,i+400).forEach(p=>b.set(doc(fs,'employees',p.id),{name:p.name,dept:p.dept,tokens:p.tokens,rights:p.rights}));
+      await b.commit();bar.style.width=Math.min(100,(i+400)/staged.length*100)+'%';
+    }
+    const roster={count:staged.length,totalRights:staged.reduce((a,p)=>a+p.rights,0),importedAt:new Date().toISOString()};
+    await setDoc(doc(fs,'config','main'),{...clone(cfg),roster});cfg.roster=roster;
+    setMsg('a-import-msg',`บันทึกรายชื่อ ${fmt(staged.length)} คนเรียบร้อย`,'ok');btn.hidden=true;staged=null;renderAdminStats();
+  }catch(e){console.error(e);setMsg('a-import-msg','บันทึกไม่สำเร็จ ตรวจสิทธิ์ผู้จัดงานแล้วลองอีกครั้ง','err')}
+  btn.disabled=false;
+}
+
+/* redemption */
+async function find(){
+  const q=$('a-q').value.trim();if(!q)return;const out=$('a-found');out.innerHTML='<p class="muted small">กำลังค้นหา...</p>';
+  try{
+    let snaps=[];
+    if(/^QD-/i.test(q)){const s=await getDocs(query(collection(fs,'spins'),where('codes','array-contains',q.toUpperCase())));snaps=s.docs}
+    else{const d=await getDoc(doc(fs,'spins',safeId(q)));if(d.exists())snaps=[d]}
+    if(!snaps.length){
+      const e=/^QD-/i.test(q)?null:await getDoc(doc(fs,'employees',safeId(q)));
+      out.innerHTML=e&&e.exists()?`<p>${esc(e.data().name)} ยังไม่เคยหมุนวงล้อ (มี ${e.data().rights} สิทธิ์)</p>`:'<p class="muted">ไม่พบข้อมูล</p>';return}
+    out.innerHTML='';
+    for(const d of snaps){
+      const s=d.data();
+      const sl=await getDocs(query(collection(fs,'slots'),where('empId','==',d.id)));
+      const valid=new Set(sl.docs.map(x=>x.data().code));
+      const wins=(s.results||[]).map((r,i)=>({...r,i})).filter(r=>r.prizeId!=='none');
+      const box=document.createElement('div');
+      box.innerHTML=`<p><b>${esc(s.name)}</b> <span class="muted small">${esc(s.empId)} ${esc(s.dept||'')}</span><br><span class="small muted">หมุนแล้ว ${s.used||0} ครั้ง</span></p>
+        ${wins.length?`<div class="scroll"><table><tr><th>รางวัล</th><th>รหัส</th><th>ตรวจสอบ</th><th></th></tr>${wins.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.code)}</td>
+          <td>${valid.has(r.code)?'<span class="tag done">ถูกต้อง</span>':'<span class="tag" style="color:var(--danger);border-color:var(--danger)">ไม่พบในระบบ</span>'}</td>
+          <td>${r.redeemed?'<span class="tag done">แลกแล้ว</span> <button class="linkbtn" data-undo="'+r.i+'">ยกเลิก</button>':(valid.has(r.code)?'<button class="btn-gold btn-small" data-red="'+r.i+'">ยืนยันการแลก</button>':'')}</td></tr>`).join('')}</table></div>`:'<p class="muted small">ไม่มีรางวัลที่ต้องแลก</p>'}
+        <div class="row" style="margin-top:8px"><button class="linkbtn danger" data-unbind>ปลดการผูกเครื่องของเลขนี้</button></div>`;
+      const setRed=async(i,v)=>{const cur=await getDoc(doc(fs,'spins',d.id));const rs=(cur.data().results||[]).slice();rs[i]={...rs[i],redeemed:v,redeemedAt:v?new Date().toISOString():null};
+        await updateDoc(doc(fs,'spins',d.id),{results:rs});find()};
+      box.querySelectorAll('[data-red]').forEach(b=>b.onclick=()=>setRed(+b.dataset.red,true));
+      box.querySelectorAll('[data-undo]').forEach(b=>b.onclick=()=>setRed(+b.dataset.undo,false));
+      armed(box.querySelector('[data-unbind]'),async()=>{await deleteDoc(doc(fs,'claims',d.id));out.insertAdjacentHTML('beforeend','<p class="msg ok">ปลดแล้ว พนักงานใส่เลขนี้ใหม่จากเครื่องที่ถูกต้องได้ ผลรางวัลเดิมยังอยู่</p>')});
+      out.appendChild(box);
+    }
+  }catch(e){console.error(e);out.innerHTML='<p class="msg err">ค้นหาไม่สำเร็จ</p>'}
+}
+
+/* export & reset */
+function csv(rows){return '\uFEFF'+rows.map(r=>r.map(c=>{c=String(c??'');return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')).join('\r\n')}
+async function exportWins(){
+  setMsg('a-msg','กำลังรวบรวม...');
+  try{
+    const s=await getDocs(collection(fs,'spins'));const rows=[['เลขพนักงาน','ชื่อ','หน่วยงาน','รางวัล','รหัส','เวลา','สถานะ']];
+    s.docs.forEach(d=>{const x=d.data();(x.results||[]).filter(r=>r.prizeId!=='none').forEach(r=>rows.push([x.empId,x.name,x.dept,r.name,r.code,new Date(r.at).toLocaleString('th-TH'),r.redeemed?'แลกแล้ว':'รอแลก']))});
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv(rows)],{type:'text/csv;charset=utf-8'}));
+    a.download='GoldenQ-ผู้ได้รางวัล.csv';document.body.appendChild(a);a.click();a.remove();
+    setMsg('a-msg',`ส่งออก ${rows.length-1} รายการ`,'ok');
+  }catch(e){setMsg('a-msg','ส่งออกไม่สำเร็จ','err')}
+}
+async function resetAll(){
+  setMsg('a-msg','กำลังล้างผล...');let n=0;
+  try{
+    for(const c of ['spins','slots','claims','stats']){
+      const s=await getDocs(collection(fs,c));
+      for(let i=0;i<s.docs.length;i+=400){const b=writeBatch(fs);s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref));await b.commit();n+=Math.min(400,s.docs.length-i)}
+    }
+    setMsg('a-msg',`ล้างผลแล้ว ${n} รายการ`,'ok');if(me)logout();renderAdminStats();
+  }catch(e){setMsg('a-msg','ล้างผลไม่สำเร็จ ลองอีกครั้ง','err')}
+}
+
+/* ---------- wiring ---------- */
+$('btn-enter').onclick=enter;
+$('emp').addEventListener('keydown',e=>{if(e.key==='Enter')enter()});
+$('wax').onclick=e=>{e.stopPropagation();openEnvelope()};
+$('envelope').onclick=openEnvelope;
+$('btn-to-wheel').onclick=()=>{go('p3');loadStats();renderRights();renderHistory()};
+$('btn-back-inv').onclick=()=>{renderInvite();resetEnvelope(true);go('p2')};
+$('btn-next-person').onclick=logout;
+$('btn-spin').onclick=spin;
+$('r-ok').onclick=()=>{$('modal').classList.remove('on');$('rcard').hidden=true;$('btn-spin').focus()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('modal').classList.contains('on'))$('r-ok').click()});
+$('btn-admin').onclick=openAdmin;
+$('btn-admin-close').onclick=()=>go(me?'p3':'p1');
+$('lg-btn').onclick=adminLogin;$('lg-pass').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
+$('btn-logout').onclick=adminLogout;
+$('a-parse').onclick=()=>stage(parseDelimited($('a-paste').value));
+$('a-file-btn').onclick=()=>$('a-file').click();
+$('a-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  try{if(/\.xlsx?$/i.test(f.name)){const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});stage(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}))}
+  else stage(parseDelimited(await f.text()))}catch(err){setMsg('a-import-msg','อ่านไฟล์ไม่สำเร็จ ลองบันทึกเป็น CSV UTF-8','err')}e.target.value=''};
+$('a-save-roster').onclick=saveRoster;
+$('c-add').onclick=()=>{draftPrizes.push({id:'p'+uid8(),name:'รางวัลใหม่',stock:1});renderPrizeRows()};
+$('c-save').onclick=saveConfig;
+$('a-find').onclick=find;$('a-q').addEventListener('keydown',e=>{if(e.key==='Enter')find()});
+$('a-export').onclick=exportWins;
+armed($('a-reset'),resetAll);
+
+renderWheel();renderInvite();
+boot();
+</script>
+</body>
+</html>
