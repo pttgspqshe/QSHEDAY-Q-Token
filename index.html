@@ -193,7 +193,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   background:linear-gradient(135deg,#7A5712,#C9A24A 45%,#8A6417);-webkit-background-clip:text;background-clip:text;color:transparent}
 .letter .l-title.thai{font-family:"Prompt",sans-serif;font-weight:500;font-size:clamp(26px,7vw,32px);letter-spacing:2px}
 .letter .l-line{width:60%;height:1px;margin:8px auto;background:linear-gradient(90deg,transparent,#B98E2E,transparent)}
-.letter .l-date{font-weight:500;letter-spacing:1px;font-size:15px;color:#7A5712}
+.letter .l-date{font-weight:500;letter-spacing:1px;font-size:15px;color:#7A5712;padding:0 8px}
 .env-front{position:absolute;inset:0;z-index:3;border-radius:6px;pointer-events:none;
   background:linear-gradient(180deg,#1E1A13,#0F0D09);clip-path:polygon(0 0,50% 62%,100% 0,100% 100%,0 100%)}
 .env-front svg,.flap .face svg{position:absolute;inset:0;width:100%;height:100%}
@@ -549,7 +549,7 @@ function rightsTotal(){return me?Number(me.emp.rights)||0:0}
 function rightsLeft(){return me?Math.max(0,rightsTotal()-(Number(me.spins?.used)||0)):0}
 function renderInvite(){
   const ev=cfg.event;
-  $('i-date-l').textContent=[ev.title||'QSHE Day 2026',ev.date].filter(Boolean).join('  |  ');
+  $('i-date-l').textContent=ev.date||'';
   $('i-msg').textContent=ev.message||'';
   $('i-date').textContent=ev.date||'-';$('i-time').textContent=ev.time||'-';$('i-place').textContent=ev.place||'-';
   if(me){$('i-name').textContent='คุณ'+me.emp.name;$('i-dept').textContent=me.emp.dept||'';$('i-emp').textContent=me.empId;$('i-rights').textContent=fmt(rightsLeft())}
