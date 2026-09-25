@@ -66,6 +66,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
   box-shadow:0 10px 30px rgba(212,175,55,.25),inset 0 1px 0 rgba(255,255,255,.5);transition:background-position .6s}
 .btn-gold:hover{color:var(--gold-ink);background-position:100% 0}
 .btn-small{width:auto;margin:0;font-size:15px;padding:8px 14px}
+.ghost2{background:transparent;color:var(--ivory);border:1px solid var(--line)}
 .linkbtn{border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:6px}
 .danger{color:var(--danger)}
 .armed{background:var(--danger)!important;color:#1A0A06!important;border-color:var(--danger)!important}
@@ -149,6 +150,25 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #confetti{position:fixed;inset:0;z-index:41;pointer-events:none;width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){.page.on,.rcard,.envelope{animation:none}.bulbs.run i{animation:none}.pointer.tick{animation:none}}
 
+/* lucky draw stage */
+.dstage{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));
+  background:radial-gradient(ellipse 70% 55% at 50% 40%,#1B1408 0%,#0A0907 60%,#050403 100%);text-align:center}
+.dstage.on{display:flex}
+.dstage .lbl{font-family:var(--roman);letter-spacing:6px;font-size:clamp(12px,2vw,16px);color:var(--gold)}
+.dstage .prize{font-family:var(--serif);font-weight:600;font-size:clamp(22px,4vw,34px);color:var(--ivory)}
+.dwin{width:min(900px,94vw);border-radius:16px;padding:clamp(20px,4vw,40px);background:linear-gradient(180deg,#1A150C,#0C0A06);position:relative;min-height:clamp(140px,22vh,200px);display:grid;place-items:center}
+.dwin::before{content:"";position:absolute;inset:0;border-radius:16px;padding:2px;background:var(--foil);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.dwin .nm{font-family:var(--serif);font-weight:700;font-size:clamp(30px,7vw,64px);line-height:1.1;word-break:break-word}
+.dwin .dp{color:var(--muted);font-size:clamp(14px,2vw,18px);margin-top:6px}
+.dwin.rolling .nm{opacity:.5}
+.dwin.landed .nm{animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+.dstage .info{color:var(--muted);font-size:14px}
+.dstage .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.dstage .acts button{border-radius:999px;padding:12px 26px}
+.chip{display:inline-block;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:14px;margin:0 6px 6px 0}
+.chip.new{background:var(--foil);color:var(--gold-ink);border:0}
+
 /* admin */
 .panel{background:rgba(21,17,10,.85);border:1px solid var(--line);border-radius:6px;padding:20px;margin-top:16px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
@@ -189,6 +209,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 @keyframes namein{to{opacity:1;transform:none;letter-spacing:0}}
 @keyframes shine{from{background-position:100% 0}to{background-position:0 0}}
 .letter .l-dept{font-size:14px;font-weight:400;color:#7D6634;min-height:1.2em}
+.letter .l-join{font-size:14px;font-weight:500;letter-spacing:1px;color:#8A6417;margin-top:6px}
 .letter .l-title{font-family:var(--display);font-weight:700;font-size:clamp(30px,8.5vw,38px);letter-spacing:1px;line-height:1.15;margin-top:8px;
   background:linear-gradient(135deg,#7A5712,#C9A24A 45%,#8A6417);-webkit-background-clip:text;background-clip:text;color:transparent}
 .letter .l-title.thai{font-family:"Prompt",sans-serif;font-weight:500;font-size:clamp(26px,7vw,32px);letter-spacing:2px}
@@ -260,9 +281,9 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
           <div class="l-ask">ขอเรียนเชิญ</div>
           <div class="l-name" id="i-name"></div>
           <div class="l-dept" id="i-dept"></div>
+          <div class="l-join" id="i-join"></div>
           <div class="l-title">The Golden Q</div>
           <div class="l-line"></div>
-          <div class="l-date" id="i-date-l"></div>
         </div>
         <div class="env-front"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,100 50,62 100,100" fill="none" stroke="rgba(212,175,55,.35)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg></div>
         <div class="flap"><div class="face front"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,0 50,100 100,0" fill="none" stroke="#D4AF37" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg></div><div class="face back"></div></div>
@@ -341,6 +362,28 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
     </div>
 
     <div class="panel">
+      <h2>Lucky Draw วันงาน</h2>
+      <p class="muted small">สุ่มผู้โชคดีจากรายชื่อผู้เข้าร่วมงาน สุ่มแล้วชื่อจะถูกตัดออกจากกล่องทันที ไม่มีทางซ้ำคนเดิม</p>
+      <textarea id="d-paste" placeholder="วางรายชื่อ บรรทัดละคน รูปแบบ ชื่อ, หน่วยงาน&#10;สมชาย ใจดี, ผยก."></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="d-add">เพิ่มรายชื่อที่วาง</button>
+        <button id="d-roster">ดึงรายชื่อจากระบบ Token</button>
+        <button id="d-clearpool" class="danger">ล้างกล่องรายชื่อ</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <input id="d-prize" placeholder="ชื่อรางวัลรอบนี้ เช่น กระบอกน้ำเก็บความเย็น" style="flex:1;min-width:200px">
+        <button class="btn-gold btn-small" id="d-open">เปิดหน้าจอสุ่ม</button>
+      </div>
+      <p class="foot" id="d-stat"></p>
+      <div id="d-winners"></div>
+      <div class="row" style="margin-top:10px">
+        <button id="d-export">ส่งออกผู้โชคดี (CSV)</button>
+        <button id="d-reset" class="danger">ล้างผลการสุ่ม</button>
+      </div>
+      <div class="msg" id="d-msg"></div>
+    </div>
+
+    <div class="panel">
       <h2>นำเข้ารายชื่อและคะแนน</h2>
       <p class="muted small">วางตารางจาก Excel หรืออัปโหลด .xlsx/.csv คอลัมน์: รหัส, ชื่อ, หน่วยงาน, Token และใส่คอลัมน์ "สิทธิ์" ได้ถ้าต้องการกำหนดเอง (ไม่ใส่ ระบบคำนวณจากกติกาด้านล่าง)</p>
       <textarea id="a-paste" placeholder="รหัส	ชื่อ	หน่วยงาน	Token	สิทธิ์"></textarea>
@@ -394,6 +437,19 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </section>
 
   <div style="text-align:center;margin-top:30px"><button class="linkbtn" id="btn-admin">สำหรับผู้จัดงาน</button></div>
+</div>
+
+<div class="dstage" id="dstage" role="dialog" aria-label="สุ่มผู้โชคดี">
+  <div class="lbl">THE GOLDEN Q LUCKY DRAW</div>
+  <div class="prize" id="d-s-prize"></div>
+  <div class="dwin" id="d-win"><div><div class="nm" id="d-s-name">พร้อมสุ่ม</div><div class="dp" id="d-s-dept"></div></div></div>
+  <div class="info" id="d-s-info"></div>
+  <div class="acts">
+    <button class="btn-gold btn-small" id="d-s-draw">สุ่มผู้โชคดี</button>
+    <button class="ghost2" id="d-s-return">คืนชื่อกลับกล่อง</button>
+    <button class="ghost2" id="d-s-close">ปิดหน้าจอ</button>
+  </div>
+  <div id="d-s-list" style="max-width:900px"></div>
 </div>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="r-prize">
@@ -549,7 +605,7 @@ function rightsTotal(){return me?Number(me.emp.rights)||0:0}
 function rightsLeft(){return me?Math.max(0,rightsTotal()-(Number(me.spins?.used)||0)):0}
 function renderInvite(){
   const ev=cfg.event;
-  $('i-date-l').textContent=ev.date||'';
+  $('i-join').textContent='เข้าร่วมงาน QSHE DAY 2026';
   $('i-msg').textContent=ev.message||'';
   $('i-date').textContent=ev.date||'-';$('i-time').textContent=ev.time||'-';$('i-place').textContent=ev.place||'-';
   if(me){$('i-name').textContent='คุณ'+me.emp.name;$('i-dept').textContent=me.emp.dept||'';$('i-emp').textContent=me.empId;$('i-rights').textContent=fmt(rightsLeft())}
@@ -733,9 +789,9 @@ function armed(btn,fn){let t=null;const label=btn.textContent;btn.addEventListen
   btn.classList.add('armed');btn.textContent='กดอีกครั้งเพื่อยืนยัน';t=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=label},3000)})}
 function renderAdminGate(){
   $('login-panel').hidden=isAdmin;$('admin-body').hidden=!isAdmin;$('btn-logout').hidden=!isAdmin;
-  if(isAdmin&&$('pa').classList.contains('on')){fillConfigForm();renderAdminStats()}
+  if(isAdmin&&$('pa').classList.contains('on')){fillConfigForm();renderAdminStats();loadDraw()}
 }
-function openAdmin(){go('pa');renderAdminGate()}
+function openAdmin(){go('pa');renderAdminGate();if(isAdmin)loadDraw()}
 async function adminLogin(){
   if(!auth){setMsg('lg-msg','ยังไม่ได้ใส่ค่า firebaseConfig ใน index.html','err');return}
   setMsg('lg-msg','กำลังเข้าสู่ระบบ...');
@@ -867,6 +923,89 @@ async function find(){
     }
   }catch(e){console.error(e);out.innerHTML='<p class="msg err">ค้นหาไม่สำเร็จ</p>'}
 }
+
+/* ---------- lucky draw (วันงาน) ---------- */
+let draw={pool:[],winners:[]},drawing=false,lastWin=null;
+async function loadDraw(){
+  try{const d=await getDoc(doc(fs,'draw','main'));draw=d.exists()?{pool:d.data().pool||[],winners:d.data().winners||[]}:{pool:[],winners:[]}}catch(e){}
+  renderDraw();
+}
+async function saveDraw(){try{await setDoc(doc(fs,'draw','main'),draw)}catch(e){setMsg('d-msg','บันทึกไม่สำเร็จ ตรวจสิทธิ์ผู้จัดงานและ Security Rules','err')}}
+function renderDraw(){
+  $('d-stat').textContent=`ในกล่องมี ${fmt(draw.pool.length)} ชื่อ · สุ่มไปแล้ว ${fmt(draw.winners.length)} คน`;
+  $('d-winners').innerHTML=draw.winners.length?'<div style="margin-top:8px">'+draw.winners.slice().reverse().map(w=>
+    `<span class="chip">${esc(w.name)}${w.prize?' — '+esc(w.prize):''}</span>`).join('')+'</div>':'';
+  $('d-s-info').textContent=`เหลือในกล่อง ${fmt(draw.pool.length)} ชื่อ`;
+  $('d-s-list').innerHTML=draw.winners.slice(-12).reverse().map((w,i)=>
+    `<span class="chip${i===0?' new':''}">${esc(w.name)}${w.prize?' — '+esc(w.prize):''}</span>`).join('');
+  $('d-s-draw').disabled=drawing||!draw.pool.length;
+  $('d-s-return').disabled=drawing||!lastWin;
+}
+function addNames(list){
+  const seen=new Set(draw.pool.map(p=>p.name+'|'+p.dept));
+  let n=0;
+  list.forEach(l=>{
+    const [name,dept]=l.split(',');const nm=(name||'').trim();if(!nm)return;
+    const key=nm+'|'+((dept||'').trim());if(seen.has(key))return;seen.add(key);
+    draw.pool.push({name:nm,dept:(dept||'').trim()});n++;
+  });
+  saveDraw();renderDraw();setMsg('d-msg',`เพิ่ม ${fmt(n)} ชื่อ รวมในกล่อง ${fmt(draw.pool.length)} ชื่อ`,'ok');
+}
+$('d-add').onclick=()=>{
+  const lines=$('d-paste').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){setMsg('d-msg','วางรายชื่อก่อน','err');return}
+  addNames(lines);$('d-paste').value='';
+};
+$('d-roster').onclick=async()=>{
+  setMsg('d-msg','กำลังดึงรายชื่อ...');
+  try{const s=await getDocs(collection(fs,'employees'));
+    addNames(s.docs.map(d=>`${d.data().name}, ${d.data().dept||''}`));
+  }catch(e){setMsg('d-msg','ดึงรายชื่อไม่สำเร็จ','err')}
+};
+armed($('d-clearpool'),()=>{draw.pool=[];saveDraw();renderDraw();setMsg('d-msg','ล้างกล่องรายชื่อแล้ว','ok')});
+armed($('d-reset'),()=>{draw.winners=[];lastWin=null;saveDraw();renderDraw();setMsg('d-msg','ล้างผลการสุ่มแล้ว','ok')});
+$('d-open').onclick=()=>{
+  $('d-s-prize').textContent=$('d-prize').value.trim()||'ของรางวัลวันงาน';
+  $('dstage').classList.add('on');document.body.style.overflow='hidden';
+  $('d-s-name').textContent='พร้อมสุ่ม';$('d-s-dept').textContent='';lastWin=null;renderDraw();$('d-s-draw').focus();
+};
+$('d-s-close').onclick=()=>{if(drawing)return;$('dstage').classList.remove('on');document.body.style.overflow=''};
+$('d-s-draw').onclick=async()=>{
+  if(drawing||!draw.pool.length)return;
+  drawing=true;renderDraw();audio();
+  const i=Math.floor(rnd()*draw.pool.length);const w=draw.pool[i];
+  const box=$('d-win');
+  if(!reduced){
+    box.classList.remove('landed');box.classList.add('rolling');
+    let d=45;while(d<280){const p=draw.pool[Math.floor(rnd()*draw.pool.length)];
+      $('d-s-name').textContent=p.name;$('d-s-dept').textContent=p.dept||'';
+      tone(1300,.03,'square',.03);await sleep(d);d*=1.12}
+    box.classList.remove('rolling');box.classList.add('landed');
+  }
+  $('d-s-name').textContent=w.name;$('d-s-dept').textContent=w.dept||'';
+  draw.pool.splice(i,1);
+  const rec={name:w.name,dept:w.dept||'',prize:$('d-prize').value.trim(),at:new Date().toISOString()};
+  draw.winners.push(rec);lastWin=rec;
+  await saveDraw();drawing=false;renderDraw();fanfare();confetti();
+};
+$('d-s-return').onclick=()=>{
+  if(!lastWin)return;
+  draw.winners=draw.winners.filter(w=>w!==lastWin);
+  draw.pool.push({name:lastWin.name,dept:lastWin.dept});
+  lastWin=null;$('d-s-name').textContent='พร้อมสุ่ม';$('d-s-dept').textContent='';
+  saveDraw();renderDraw();
+};
+$('d-export').onclick=()=>{
+  if(!draw.winners.length){setMsg('d-msg','ยังไม่มีผู้โชคดี','err');return}
+  const rows=[['ลำดับ','ชื่อ','หน่วยงาน','รางวัล','เวลา'],...draw.winners.map((w,i)=>[i+1,w.name,w.dept,w.prize,new Date(w.at).toLocaleString('th-TH')])];
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv(rows)],{type:'text/csv;charset=utf-8'}));
+  a.download='GoldenQ-ผู้โชคดีวันงาน.csv';document.body.appendChild(a);a.click();a.remove();
+};
+document.addEventListener('keydown',e=>{
+  if(!$('dstage').classList.contains('on'))return;
+  if(e.key==='Escape')$('d-s-close').click();
+  else if(e.key===' '||e.key==='Enter'){if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&document.activeElement.id!=='d-s-draw')return;e.preventDefault();$('d-s-draw').click()}
+});
 
 /* export & reset */
 function csv(rows){return '\uFEFF'+rows.map(r=>r.map(c=>{c=String(c??'');return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')).join('\r\n')}
