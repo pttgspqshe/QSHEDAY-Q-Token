@@ -331,6 +331,35 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </section>
 
+  <!-- draw screen (จอใหญ่) -->
+  <section class="page" id="pds">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="eyebrow">THE GOLDEN Q LUCKY DRAW</span>
+      <button class="linkbtn" id="ds-exit">ออก</button>
+    </div>
+    <div class="center" style="margin-top:6vh">
+      <div id="ds-prize" style="font-family:var(--serif);font-weight:500;font-size:clamp(20px,4vw,34px);color:var(--gold)">รอผู้บริหารเลือกรางวัล</div>
+      <div class="dwin" id="ds-win" style="margin:20px auto 0"><div><div class="nm" id="ds-name">พร้อมสุ่ม</div><div class="dp" id="ds-dept"></div></div></div>
+      <div class="muted small" id="ds-info" style="margin-top:12px"></div>
+      <div id="ds-list" style="margin-top:18px"></div>
+    </div>
+  </section>
+
+  <!-- draw remote (iPad ผู้บริหาร) -->
+  <section class="page" id="pdr">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h1 style="font-size:26px;margin:0" class="foil">เลือกรางวัลเพื่อสุ่ม</h1>
+      <button class="linkbtn" id="dr-exit">ออก</button>
+    </div>
+    <p class="muted small" id="dr-info"></p>
+    <div id="dr-prizes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+    <div class="panel center" id="dr-last"></div>
+    <div class="row" style="justify-content:center">
+      <button id="dr-return">คืนชื่อกลับกล่อง (ไม่อยู่ในห้อง)</button>
+    </div>
+    <div class="msg center" id="dr-msg"></div>
+  </section>
+
   <!-- admin -->
   <section class="page" id="pa">
     <div class="row" style="justify-content:space-between"><h2 style="font-size:30px;margin:0" class="foil">สำหรับผู้จัดงาน</h2><div class="row"><button id="btn-logout" hidden>ออกจากระบบผู้จัดงาน</button><button id="btn-admin-close">กลับหน้าผู้ใช้</button></div></div>
@@ -370,9 +399,16 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
         <button id="d-roster">ดึงรายชื่อจากระบบ Token</button>
         <button id="d-clearpool" class="danger">ล้างกล่องรายชื่อ</button>
       </div>
+      <label class="f" style="margin-top:12px" for="d-prizes">รายการรางวัลสำหรับจับบนเวที (บรรทัดละรายการ: ชื่อรางวัล, จำนวน)</label>
+      <textarea id="d-prizes" style="min-height:90px" placeholder="กระบอกน้ำเก็บความเย็น, 2&#10;ร่มพับ QSHE Day, 10"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn-gold btn-small" id="d-save-prizes">บันทึกรายการรางวัล</button></div>
+      <div class="row" style="margin-top:12px">
+        <button id="d-screen">เปิดหน้าจอใหญ่ (โปรเจกเตอร์)</button>
+        <button id="d-remote">เปิดหน้ารีโมตผู้บริหาร (iPad)</button>
+      </div>
       <div class="row" style="margin-top:10px">
-        <input id="d-prize" placeholder="ชื่อรางวัลรอบนี้ เช่น กระบอกน้ำเก็บความเย็น" style="flex:1;min-width:200px">
-        <button class="btn-gold btn-small" id="d-open">เปิดหน้าจอสุ่ม</button>
+        <input id="d-prize" placeholder="สุ่มเองแบบรวดเร็ว: ชื่อรางวัลรอบนี้" style="flex:1;min-width:200px">
+        <button class="btn-small" id="d-open">เปิดหน้าจอสุ่มบนเครื่องนี้</button>
       </div>
       <p class="foot" id="d-stat"></p>
       <div id="d-winners"></div>
@@ -515,12 +551,12 @@ let me=null,spinsUnsub=null,slotCounts={},spinning=false,rot=0;
 
 /* ---------- navigation ---------- */
 function go(p){
-  ['p1','p2','p3','pa'].forEach(x=>$(x).classList.toggle('on',x===p));
+  ['p1','p2','p3','pa','pds','pdr'].forEach(x=>$(x).classList.toggle('on',x===p));
   $('wrap').classList.toggle('wide',p==='pa');
   $('steps').style.visibility=p==='pa'?'hidden':'visible';
   const n={p1:1,p2:2,p3:3}[p]||0;
   [...$('steps').children].forEach((d,i)=>d.classList.toggle('on',i<n));
-  $('btn-admin').hidden=p==='pa';
+  $('btn-admin').hidden=p==='pa'||p==='pds'||p==='pdr';
   window.scrollTo(0,0);
 }
 function setMsg(el,t,kind){const m=$(el);m.className='msg'+(kind?' '+kind:'');m.textContent=t||''}
@@ -925,9 +961,11 @@ async function find(){
 }
 
 /* ---------- lucky draw (วันงาน) ---------- */
-let draw={pool:[],winners:[]},drawing=false,lastWin=null;
+let draw={pool:[],winners:[],prizes:[],live:null},drawing=false,lastWin=null;
 async function loadDraw(){
-  try{const d=await getDoc(doc(fs,'draw','main'));draw=d.exists()?{pool:d.data().pool||[],winners:d.data().winners||[]}:{pool:[],winners:[]}}catch(e){}
+  try{const d=await getDoc(doc(fs,'draw','main'));draw=d.exists()?{pool:d.data().pool||[],winners:d.data().winners||[],prizes:d.data().prizes||[],live:d.data().live||null}:{pool:[],winners:[],prizes:[],live:null}}catch(e){}
+  $('d-prizes').value=(draw.prizes||[]).map(p=>p.name+', '+p.qty).join('\n');
+  watchDraw();
   renderDraw();
 }
 async function saveDraw(){try{await setDoc(doc(fs,'draw','main'),draw)}catch(e){setMsg('d-msg','บันทึกไม่สำเร็จ ตรวจสิทธิ์ผู้จัดงานและ Security Rules','err')}}
@@ -1006,6 +1044,86 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape')$('d-s-close').click();
   else if(e.key===' '||e.key==='Enter'){if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&document.activeElement.id!=='d-s-draw')return;e.preventDefault();$('d-s-draw').click()}
 });
+
+/* ---------- จอใหญ่ + รีโมตผู้บริหาร ---------- */
+let drawUnsub=null,seenLive=null,dsBusy=false;
+function watchDraw(){
+  if(drawUnsub)return;
+  drawUnsub=onSnapshot(doc(fs,'draw','main'),s=>{
+    draw=s.exists()?{pool:s.data().pool||[],winners:s.data().winners||[],prizes:s.data().prizes||[],live:s.data().live||null}:{pool:[],winners:[],prizes:[],live:null};
+    if($('pa').classList.contains('on'))renderDraw();
+    if($('pdr').classList.contains('on'))renderDrawRemote();
+    if($('pds').classList.contains('on'))renderDrawScreen();
+  },()=>{});
+}
+function prizeList(){
+  if(draw.prizes&&draw.prizes.length)return draw.prizes;
+  return (cfg.prizes||[]).map(p=>({name:p.name,qty:p.stock}));
+}
+function givenOf(name){return draw.winners.filter(w=>w.prize===name).length}
+function renderDrawRemote(){
+  $('dr-info').textContent=`เหลือในกล่อง ${fmt(draw.pool.length)} ชื่อ · สุ่มไปแล้ว ${fmt(draw.winners.length)} คน`;
+  const list=prizeList();
+  $('dr-prizes').innerHTML=list.map((p,i)=>{
+    const left=Math.max(0,(Number(p.qty)||0)-givenOf(p.name));
+    return `<button class="${left>0?'btn-gold':''}" data-prize="${i}" ${left<=0||!draw.pool.length?'disabled':''}
+      style="padding:18px;border-radius:14px;text-align:center;font-size:18px;width:100%;margin:0">
+      ${esc(p.name)}<br><span class="small" style="opacity:.75">เหลือ ${left} จาก ${p.qty}</span></button>`}).join('')
+    ||'<p class="muted small">ยังไม่ได้ตั้งรายการรางวัล ไปที่หน้าผู้จัดงาน</p>';
+  $('dr-prizes').querySelectorAll('[data-prize]').forEach(b=>b.onclick=()=>drawFor(list[+b.dataset.prize]));
+  const w=draw.winners[draw.winners.length-1];
+  $('dr-last').innerHTML=w?`<div class="small muted">ผู้โชคดีคนล่าสุด</div>
+    <div style="font-family:var(--serif);font-weight:600;font-size:26px" class="foil">${esc(w.name)}</div>
+    <div class="small muted">${esc(w.dept||'')} · ${esc(w.prize||'')}</div>`:'<span class="muted small">ยังไม่มีการสุ่ม</span>';
+  $('dr-return').disabled=!w;
+}
+async function drawFor(prize){
+  if(!draw.pool.length||dsBusy)return;
+  dsBusy=true;setMsg('dr-msg','กำลังสุ่ม...');
+  const i=Math.floor(rnd()*draw.pool.length);const w=draw.pool[i];
+  draw.pool.splice(i,1);
+  const rec={name:w.name,dept:w.dept||'',prize:prize.name,at:new Date().toISOString()};
+  draw.winners.push(rec);
+  draw.live={...rec,id:Math.random().toString(36).slice(2,10)};
+  try{await setDoc(doc(fs,'draw','main'),draw)}catch(e){setMsg('dr-msg','บันทึกไม่สำเร็จ ลองอีกครั้ง','err')}
+  dsBusy=false;renderDrawRemote();setMsg('dr-msg','');
+}
+$('dr-return').onclick=async()=>{
+  const w=draw.winners[draw.winners.length-1];if(!w)return;
+  draw.winners.pop();draw.pool.push({name:w.name,dept:w.dept});draw.live=null;
+  try{await setDoc(doc(fs,'draw','main'),draw)}catch(e){}
+  renderDrawRemote();setMsg('dr-msg','คืนชื่อกลับกล่องแล้ว','ok');
+};
+function renderDrawScreen(){
+  $('ds-info').textContent=`เหลือในกล่อง ${fmt(draw.pool.length)} ชื่อ`;
+  $('ds-list').innerHTML=draw.winners.slice(-10).reverse().map((w,i)=>
+    `<span class="chip${i===0?' new':''}">${esc(w.name)}${w.prize?' — '+esc(w.prize):''}</span>`).join('');
+  const live=draw.live;
+  if(!live){$('ds-prize').textContent='รอผู้บริหารเลือกรางวัล';$('ds-name').textContent='พร้อมสุ่ม';$('ds-dept').textContent='';return}
+  if(live.id===seenLive){$('ds-prize').textContent=live.prize||'';$('ds-name').textContent=live.name;$('ds-dept').textContent=live.dept||'';return}
+  seenLive=live.id;revealOnScreen(live);
+}
+async function revealOnScreen(live){
+  const box=$('ds-win');$('ds-prize').textContent=live.prize||'';
+  audio();
+  if(!reduced&&draw.pool.length){
+    box.classList.remove('landed');box.classList.add('rolling');
+    let d=45;while(d<280){const p=draw.pool[Math.floor(rnd()*draw.pool.length)]||live;
+      $('ds-name').textContent=p.name;$('ds-dept').textContent=p.dept||'';
+      tone(1300,.03,'square',.03);await sleep(d);d*=1.12}
+    box.classList.remove('rolling');box.classList.add('landed');
+  }
+  $('ds-name').textContent=live.name;$('ds-dept').textContent=live.dept||'';
+  fanfare();confetti();
+}
+$('d-screen').onclick=()=>{watchDraw();go('pds');renderDrawScreen()};
+$('d-remote').onclick=()=>{watchDraw();go('pdr');renderDrawRemote()};
+$('ds-exit').onclick=$('dr-exit').onclick=()=>go('pa');
+$('d-save-prizes').onclick=async()=>{
+  draw.prizes=$('d-prizes').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    const [name,qty]=l.split(',');return {name:(name||'').trim(),qty:Math.max(1,parseInt(qty)||1)}});
+  await saveDraw();renderDraw();setMsg('d-msg',`บันทึก ${draw.prizes.length} รายการรางวัลแล้ว`,'ok');
+};
 
 /* export & reset */
 function csv(rows){return '\uFEFF'+rows.map(r=>r.map(c=>{c=String(c??'');return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')).join('\r\n')}
