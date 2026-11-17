@@ -1,0 +1,1172 @@
+<!-- GSPMaster-QSHEDAY : เกม Q Master แฟนพันธุ์แท้ GSP — ห้ามลบ — ชื่อไฟล์บน GitHub ต้องเป็น index.html -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Q Master — แฟนพันธุ์แท้ GSP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0907;--panel:#15110A;--ivory:#F3EBD7;--muted:#B3A68A;--line:rgba(212,175,55,.3);
+  --gold:#D4AF37;--gold-hi:#FFEFB0;--gold-ink:#1A1306;--ok:#4CC1A0;--bad:#EC8A78;
+  --foil:linear-gradient(135deg,#7E5E17 0%,#D8B24A 22%,#FFF0B5 45%,#E2BC55 62%,#8E6A1A 100%);
+  --display:"Playfair Display","Prompt",Georgia,serif;
+  --body:"Prompt","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0907}}
+:root[data-theme="dark"]{--bg:#0A0907}
+html{background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ivory);font-family:var(--body);font-weight:400;font-size:16px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 40% 60% at 15% -10%,rgba(255,236,170,.1),transparent 70%),
+             radial-gradient(ellipse 40% 60% at 85% -10%,rgba(255,236,170,.1),transparent 70%)}
+.wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:20px}
+.foil{background:var(--foil);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,6vw,44px);margin:0 0 4px;letter-spacing:1px}
+h2{font-family:var(--body);font-weight:500;font-size:20px;color:var(--gold);margin:0 0 10px}
+h3{font-weight:500;font-size:17px;color:var(--gold);margin:18px 0 8px}
+p{margin:0 0 10px}.muted{color:var(--muted)}.small{font-size:14px}.center{text-align:center}
+button{font:inherit;font-weight:500;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ivory);padding:10px 14px}
+button:hover{border-color:var(--gold);color:var(--gold-hi)}
+button:disabled{opacity:.35;cursor:not-allowed}
+.gold{background:var(--foil);color:var(--gold-ink);border:0;font-weight:600}
+.gold:hover{color:var(--gold-ink);filter:brightness(1.06)}
+input,select,textarea{font:inherit;color:var(--ivory);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{min-height:70px}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:3px}
+[hidden]{display:none!important}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.panel{background:rgba(21,17,10,.85);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}
+label.f{display:block;font-size:13px;color:var(--muted);margin-bottom:3px}
+.tag{display:inline-block;font-size:12px;padding:2px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+
+/* role picker */
+.pick{display:grid;gap:12px;margin-top:22px}
+.pick button{padding:18px;text-align:left;font-size:18px}
+.pick span{display:block;font-size:14px;color:var(--muted);font-weight:400}
+
+/* ===== stage screen ===== */
+.stage{max-width:none;padding:clamp(14px,2vw,28px)}
+.st-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;font-size:clamp(13px,1.6vw,18px);color:var(--gold);letter-spacing:2px}
+.q-box{margin-top:clamp(10px,2vh,26px);text-align:center}
+.q-cat{font-size:clamp(13px,1.6vw,18px);color:var(--muted)}
+.q-text{font-weight:500;font-size:clamp(30px,5.6vw,80px);line-height:1.2;margin:10px auto;max-width:24ch}
+.stage .q-box{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 170px)}
+.stage .board{margin-top:clamp(14px,3vh,34px)}
+.stage .pl{padding:14px 26px;min-width:190px}
+.stage .pl .n{font-size:clamp(16px,2vw,26px)}
+.stage .pl .s{font-size:clamp(34px,5vw,64px)}
+.sum-h{font-family:var(--display);font-size:clamp(30px,5vw,60px);color:var(--gold-hi);text-align:center;margin-top:6vh}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vw,20px);margin:clamp(10px,2vh,22px) auto 0;max-width:1500px;width:92vw}
+@media (max-width:640px){.choices{grid-template-columns:1fr}}
+.ch{display:flex;align-items:center;gap:16px;border:2px solid var(--line);border-radius:14px;padding:clamp(12px,2vw,24px);font-size:clamp(20px,3.1vw,40px);background:rgba(255,255,255,.03)}
+.ch b{display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;background:var(--foil);color:var(--gold-ink);font-family:var(--display);font-size:.9em;flex:none}
+.ch.correct{border-color:var(--ok);background:rgba(76,193,160,.16)}
+.ch.dim{opacity:.35}
+.hints{margin:14px auto 0;max-width:900px;display:grid;gap:8px}
+.hint{border-left:3px solid var(--gold);padding:6px 12px;text-align:left;font-size:clamp(15px,2vw,22px);color:var(--gold-hi)}
+.timer{margin:clamp(10px,2vh,20px) auto 0;max-width:1500px;width:92vw}
+.timer .bar{height:14px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.timer .bar i{display:block;height:100%;background:var(--foil);transition:width .25s linear}
+.timer .num{font-family:var(--display);font-size:clamp(34px,6vw,72px);line-height:1;margin-top:6px}
+.timer.hot .num{color:var(--bad)}
+.answer{margin-top:clamp(10px,2vh,20px);font-weight:600;font-size:clamp(20px,3.4vw,40px);color:var(--ok)}
+.board{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:clamp(12px,2.5vh,28px)}
+.pl{border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:120px;text-align:center;background:rgba(255,255,255,.03)}
+.pl .n{font-size:clamp(13px,1.5vw,16px);font-weight:500}
+.pl .s{font-family:var(--display);font-size:clamp(20px,2.6vw,30px);line-height:1.1}
+.pl .lf{font-size:11px;color:var(--muted);letter-spacing:2px}
+.pl.out{opacity:.3}
+.pl.lead{border-color:var(--gold);box-shadow:0 0 18px rgba(212,175,55,.3)}
+.overlay{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,10,14,.9);text-align:center}
+.overlay.on{display:flex}
+.overlay .in{max-width:900px}
+.overlay .kind{font-size:clamp(16px,2.4vw,24px);color:var(--gold);letter-spacing:4px}
+.overlay .who{font-family:var(--display);font-weight:700;font-size:clamp(32px,7vw,64px);line-height:1.1;margin:10px 0}
+.overlay .cd{font-family:var(--display);font-size:clamp(40px,9vw,80px);color:var(--gold-hi)}
+
+/* remote */
+.rq{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.rq .t{font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pbtn{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:left;font-size:14px}
+.pbtn.sel{border-color:var(--gold);background:rgba(212,175,55,.14)}
+.pbtn.out{opacity:.35}
+.pbtn .sc{float:right;font-family:var(--display);font-size:17px}
+.qrow{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+</style>
+</head>
+<body>
+<div id="errbar" style="display:none;position:fixed;left:0;right:0;top:0;z-index:99;background:#7A1B12;color:#fff;font-size:13px;padding:8px 12px;text-align:center"></div>
+<div class="wrap" id="wrap">
+
+  <!-- role picker -->
+  <section id="p-role">
+    <div class="center" style="margin-top:20px">
+      <div class="small" style="letter-spacing:5px;color:var(--gold)">THE GOLDEN Q</div>
+      <h1 class="foil">Q Master</h1>
+      <p class="muted">แฟนพันธุ์แท้ GSP — เลือกโหมดของเครื่องนี้</p>
+    </div>
+    <div class="pick">
+      <button data-role="stage" class="gold">จอหลัก (ต่อโปรเจกเตอร์)<span>แสดงคำถาม เวลา เฉลย และกระดานคะแนน</span></button>
+      <button data-role="remote">รีโมตทีมงาน<span>กดเริ่มเวลา เฉลย ให้คะแนน และใช้ตัวช่วย</span></button>
+      <button data-role="setup">ตั้งค่า<span>รายชื่อผู้แข่ง และคลังคำถาม</span></button>
+      <button data-role="vote">ผู้ชมโหวต<span>สำหรับคนในห้อง เลือกคำตอบจากมือถือตัวเอง</span></button>
+    </div>
+    <p class="msg small muted" id="role-msg" style="margin-top:14px"></p>
+  </section>
+
+  <!-- stage -->
+  <section id="p-stage" hidden>
+    <div class="st-head"><span><span id="s-round">รอบที่ 1</span> <span id="s-status" class="tag"></span></span><span class="row" style="gap:10px"><span id="s-brand">Q MASTER 2026</span><button id="s-exit" title="เปลี่ยนโหมด (Esc)" style="padding:4px 10px;font-size:13px;opacity:.5">เปลี่ยนโหมด</button></span></div>
+    <div class="q-box">
+      <div class="q-cat" id="s-cat"></div>
+      <div class="q-text" id="s-q">กดเริ่มจากรีโมตเพื่อแสดงคำถาม</div>
+      <div id="s-img-box" hidden style="margin:clamp(8px,1.6vh,18px) auto 0;max-width:1200px;width:88vw">
+        <img id="s-img" alt="รูปประกอบคำถาม" style="max-width:100%;max-height:42vh;object-fit:contain;border-radius:14px;border:1px solid rgba(212,175,55,.35);display:block;margin:0 auto">
+      </div>
+      <div class="choices" id="s-choices"></div>
+      <div class="hints" id="s-hints"></div>
+      <div class="timer" id="s-timer" hidden><div class="bar"><i></i></div><div class="num">0</div></div>
+      <div class="answer" id="s-ans" hidden></div>
+      <div id="s-poll" style="max-width:1100px;margin:18px auto 0"></div>
+    </div>
+    <div class="center" id="s-turn" hidden style="margin-top:14px;font-size:clamp(18px,3vw,32px);color:var(--gold-hi)"></div>
+    <div class="sum-h" id="s-sum-h" hidden></div>
+    <div class="center" id="s-alive" hidden style="margin-top:14px;font-size:clamp(16px,2.4vw,26px)"></div>
+    <div class="board" id="s-board" hidden></div>
+    <div id="s-qr-box" style="position:fixed;right:18px;bottom:16px;text-align:center;background:rgba(10,9,7,.78);border:1px solid rgba(212,175,55,.45);border-radius:12px;padding:10px 10px 8px">
+      <div id="s-qr" style="width:132px;height:132px;background:#F6DC8A;border-radius:6px;display:flex;align-items:center;justify-content:center"></div>
+      <div class="small" style="color:var(--gold-hi);margin-top:6px;letter-spacing:1px">สแกนเพื่อร่วมโหวต</div>
+      <div class="small muted" id="s-qr-url" style="max-width:150px;word-break:break-all;font-size:10px"></div>
+    </div>
+  </section>
+
+  <!-- audience vote -->
+  <section id="p-vote" hidden>
+    <div class="row" style="justify-content:space-between">
+      <h1 style="font-size:26px;margin:0" class="foil">โหวตคำตอบ</h1>
+      <button id="v-exit">เปลี่ยนโหมด</button>
+    </div>
+    <div class="panel">
+      <label class="f" for="v-name">ชื่อผู้ร่วมโหวต (ใส่ไว้เพื่อลุ้นของรางวัลระหว่างพักรอบ)</label>
+      <div class="row">
+        <input id="v-name" maxlength="40" placeholder="เช่น สมชาย ผยก." style="flex:1;min-width:180px">
+        <button id="v-name-save">บันทึกชื่อ</button>
+      </div>
+      <div class="small muted" id="v-name-info" style="margin:6px 0 10px"></div>
+      <p class="muted small" id="v-status">กำลังเชื่อมต่อ...</p>
+      <div id="v-q" style="font-size:22px;font-weight:500;margin:10px 0"></div>
+      <img id="v-img" alt="รูปประกอบคำถาม" hidden style="max-width:100%;max-height:230px;object-fit:contain;border-radius:12px;border:1px solid rgba(212,175,55,.3);display:block;margin:0 0 12px">
+      <div id="v-choices" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+      <div id="v-text-box" hidden>
+        <input id="v-text" placeholder="พิมพ์คำตอบของคุณ" style="font-size:18px">
+        <div class="row" style="margin-top:10px"><button class="gold" id="v-send">ส่งคำตอบ</button></div>
+      </div>
+      <div class="msg" id="v-msg" style="margin-top:10px"></div>
+      <p class="muted small" style="margin-top:10px">ระบบจะไม่เฉลยในหน้านี้ รอพิธีกรเฉลยบนเวที</p>
+    </div>
+  </section>
+
+  <!-- login -->
+  <section id="p-login" hidden>
+    <div class="row" style="justify-content:space-between"><h1 style="font-size:26px;margin:0">เข้าสู่ระบบทีมงาน</h1><button id="l-exit">เปลี่ยนโหมด</button></div>
+    <div class="panel">
+      <p class="muted small">โหมดรีโมตและตั้งค่าต้องเข้าสู่ระบบ ใช้อีเมลและรหัสผ่านเดียวกับระบบวงล้อ (Firebase Authentication)</p>
+      <div class="row">
+        <div style="flex:1;min-width:180px"><label class="f" for="l-email">อีเมล</label><input id="l-email" type="email" autocomplete="username"></div>
+        <div style="flex:1;min-width:150px"><label class="f" for="l-pass">รหัสผ่าน</label><input id="l-pass" type="password" autocomplete="current-password"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="gold" id="l-btn">เข้าสู่ระบบ</button></div>
+      <div class="msg small" id="l-msg" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <!-- remote -->
+  <section id="p-remote" hidden>
+    <div class="row" style="justify-content:space-between">
+      <h1 style="font-size:26px;margin:0">รีโมตทีมงาน</h1>
+      <div class="row"><span class="tag" id="r-progress"></span><button id="r-exit">เปลี่ยนโหมด</button></div>
+    </div>
+
+    <!-- 1. คำถาม -->
+    <div class="panel">
+      <div class="row" style="justify-content:space-between">
+        <div class="row">
+          <label class="f" for="r-round" style="margin:0">รอบ</label>
+          <select id="r-round" style="width:auto"><option value="1">1 ตอบพร้อมกัน (8 ทีม)</option><option value="2">2 เขียนตอบ (5 ทีม)</option><option value="3">ชิงชนะเลิศ (3 ทีม)</option></select>
+          <span class="row" style="gap:6px"><input id="r-sec" type="number" min="5" max="180" style="width:72px" aria-label="วินาที"><span class="muted small">วินาที</span></span>
+        </div>
+        <button id="r-reload" style="padding:6px 12px;font-size:13px">โหลดข้อมูลใหม่</button>
+      </div>
+      <div class="msg small" id="r-top" style="margin:6px 0"></div>
+
+      <div class="row" style="margin-bottom:8px">
+        <select id="r-pick" style="flex:1;min-width:220px"></select>
+        <button class="gold" id="r-pick-go">ขึ้นข้อที่เลือก</button>
+        <button id="r-next">สุ่มข้อถัดไป</button>
+      </div>
+      <div class="rq" id="r-current"><span class="muted">ยังไม่ได้เลือกคำถาม</span></div>
+      <div class="small muted" id="r-img" hidden style="margin-top:6px"></div>
+      <div class="small muted" id="r-imgload" style="margin-top:4px"></div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="gold" id="r-start" style="flex:1;min-width:140px;padding:14px">▶ เริ่มจับเวลา</button>
+        <button class="gold" id="r-reveal" style="flex:1;min-width:140px;padding:14px">เฉลย</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="r-pause" style="flex:1;min-width:150px">⏸ หยุดเวลาชั่วคราว</button>
+        <button id="r-hint">คำใบ้</button>
+        <button id="r-undo-reset" hidden>คืนคะแนนก่อนรีเซ็ต</button>
+      </div>
+    </div>
+
+    <!-- 2. ให้คะแนน -->
+    <div class="panel">
+      <h2 id="r-score-h">ให้คะแนน</h2>
+      <p class="muted small" id="r-score-hint">เลือกทีมที่ตอบถูก แล้วกดให้คะแนน (รอบนี้ข้อละ <span id="r-pts">1</span> คะแนน)</p>
+      <div class="grid" id="r-players"></div>
+      <div class="row" style="margin-top:10px" id="r-score-ctl">
+        <button class="gold" id="r-award" style="flex:1;min-width:150px;padding:14px">+ ให้คะแนนทีมที่เลือก</button>
+        <button id="r-minus">− ลบคะแนน</button>
+      </div>
+      <div class="msg small" id="r-msg" style="margin-top:8px"></div>
+    </div>
+
+    <!-- 3. จบรอบ -->
+    <div class="panel">
+      <h2>จบรอบ</h2>
+      <p class="muted small">ระหว่างเล่นจอหลักจะไม่โชว์คะแนน กดปุ่มนี้เมื่อจบรอบเพื่อขึ้นสรุปคะแนนบนจอ</p>
+      <div class="row">
+        <button class="gold" id="r-scores" style="flex:1;min-width:170px;padding:14px">สรุปคะแนนขึ้นจอ</button>
+        <button id="r-cut5">คัดเหลือ 5 ทีม</button>
+        <button id="r-cut3">คัดเหลือ 3 ทีม</button>
+        <button id="r-winner">ประกาศผู้ชนะ</button>
+      </div>
+    </div>
+
+    <!-- 4. สุ่มของรางวัลผู้ชม -->
+    <div class="panel">
+      <h2>สุ่มของรางวัลผู้ชม (ระหว่างพักรอบ)</h2>
+      <p class="muted small">สุ่มจากผู้ชมที่ใส่ชื่อไว้ในหน้าโหวต ชื่อที่ถูกรางวัลแล้วจะไม่ถูกสุ่มซ้ำ จอหลักจะไล่ชื่อแล้วหยุดที่ผู้โชคดี</p>
+      <div class="row">
+        <input id="lk-prize" placeholder="ชื่อรางวัล (ไม่ใส่ก็ได้)" style="flex:1;min-width:160px">
+        <button class="gold" id="lk-draw" style="padding:14px">🎁 สุ่มผู้โชคดี</button>
+        <button id="lk-close">ปิดกล่องรางวัล</button>
+        <button id="lk-reset">ล้างรายชื่อผู้ถูกรางวัล</button>
+      </div>
+      <div class="small muted" id="lk-info" style="margin-top:8px"></div>
+    </div>
+
+    <!-- 5. ตัวช่วย (รอบ 3) -->
+    <div class="panel" id="r-lf-panel">
+      <h2>ตัวช่วยชีวิต (รอบชิงชนะเลิศ)</h2>
+      <p class="muted small">ทีมจับฉลากเลือกตัวช่วยเอง ระบบจับเวลาให้ · เลือกทีมด้านบนก่อน แล้วกดเริ่ม</p>
+      <div class="row">
+        <span class="row" style="gap:6px"><span class="muted small">เวลา (วินาที)</span><input id="lf-sec" type="number" min="5" max="300" style="width:90px"></span>
+        <button class="gold" id="lf-start">เริ่มจับเวลาตัวช่วย</button>
+        <button id="lf-close">ปิดกล่องตัวช่วย</button>
+      </div>
+      <div class="small muted" id="lf-info" style="margin-top:8px"></div>
+    </div>
+
+    <!-- 6. เครื่องมือเพิ่มเติม -->
+    <details class="panel">
+      <summary style="cursor:pointer;font-weight:500;color:var(--gold-hi)">เครื่องมือเพิ่มเติม (โหวตผู้ชม · ลิงก์ · คิวทีม · ข้อตัดสิน)</summary>
+
+      <div style="margin-top:12px" id="r-poll-panel">
+        <h2>โหวตจากผู้ชมในห้อง</h2>
+        <p class="muted small">ระบบเปิดรับโหวตอัตโนมัติทุกครั้งที่ขึ้นคำถามใหม่ และเผยผลตอนกดเฉลย ปุ่มเหล่านี้ใช้เมื่อต้องการเปิดเองหรือเปลี่ยนรูปแบบ</p>
+        <div class="row">
+          <button id="poll-open">เปิดโหวต A-D</button>
+          <button id="poll-open-text">เปิดโหวตแบบพิมพ์ตอบ</button>
+          <button id="poll-close">ปิดรับโหวต</button>
+          <button id="poll-hide">ซ่อน/แสดงผลบนจอ</button>
+        </div>
+        <div id="poll-counts" class="small" style="margin-top:10px"></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <h2>ลิงก์ให้ผู้ชมโหวต</h2>
+        <div class="row">
+          <input id="r-votelink" readonly style="flex:1;min-width:220px">
+          <button id="r-copylink">คัดลอกลิงก์</button>
+        </div>
+        <p class="muted small" style="margin-top:6px">QR อยู่มุมขวาล่างของจอหลักด้วย</p>
+      </div>
+
+      <div style="margin-top:16px">
+        <h2>สถานะเกมและคิวทีม</h2>
+        <div class="row">
+          <button id="r-start-game">เริ่มเกม</button>
+          <button id="r-end-game">หยุดเกม</button>
+          <button id="r-toggle-out">คัดออก / คืนสิทธิ์ทีมที่เลือก</button>
+        </div>
+        <div class="row" style="margin-top:10px" id="r-turn-ctl">
+          <span class="tag" id="r-turn-now"></span>
+          <button id="r-turn-ok">ทีมถัดไปเลือกซอง</button>
+          <button id="r-turn-bad">ข้ามทีมนี้</button>
+          <button id="r-turn-set">ตั้งทีมที่เลือกเป็นคิวนี้</button>
+        </div>
+        <div class="row" style="margin-top:10px" id="r-live-ctl" hidden>
+          <button id="r-wrong">ตอบผิด</button><button id="r-revive">คืนชีพ</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px" id="r-tie-panel">
+        <h2>ข้อตัดสิน (ทายตัวเลข)</h2>
+        <p class="muted small">ใช้เมื่อคะแนนเท่ากันตรงเส้นตัด ให้ทุกทีมเขียนตัวเลข แล้วกรอกที่นี่</p>
+        <div class="row">
+          <div style="flex:2;min-width:180px"><label class="f" for="tie-q">คำถามข้อตัดสิน</label><input id="tie-q" placeholder="เช่น ปีที่เริ่มเดินเครื่องโรงแยกก๊าซหน่วยที่ 1"></div>
+          <div style="flex:1;min-width:120px"><label class="f" for="tie-ans">คำตอบที่ถูก (ตัวเลข)</label><input id="tie-ans" type="number"></div>
+        </div>
+        <div class="row" style="margin-top:8px"><button id="tie-show">ขึ้นคำถามบนจอ</button><button id="tie-calc">คำนวณผู้ที่ใกล้ที่สุด</button><button id="tie-clear">ปิดข้อตัดสิน</button></div>
+        <div id="tie-inputs" class="grid" style="margin-top:10px"></div>
+        <div id="tie-result" class="small" style="margin-top:8px"></div>
+      </div>
+    </details>
+  </section>
+
+  <!-- setup -->
+  <section id="p-setup" hidden>
+    <div class="row" style="justify-content:space-between">
+      <h1 style="font-size:26px;margin:0">ตั้งค่า</h1>
+      <button id="c-exit">เปลี่ยนโหมด</button>
+    </div>
+
+    <div class="panel">
+      <h2>ทีมผู้เข้าแข่งขัน (สูงสุด 10 ทีม · รอบแรกใช้ 8 ทีม)</h2>
+      <p class="muted small">พิมพ์บรรทัดละทีม รูปแบบ: ชื่อทีม, หน่วยงาน</p>
+      <div class="row" style="margin-bottom:8px">
+        <button id="c-load-emp">ดึงรายชื่อพนักงานจากระบบ</button>
+        <input id="c-search" placeholder="ค้นหาชื่อหรือหน่วยงาน" style="flex:1;min-width:160px" hidden>
+      </div>
+      <div id="c-emp-list" class="grid" style="max-height:260px;overflow:auto"></div>
+      <div class="row" id="c-emp-act" style="margin:8px 0" hidden><button class="gold" id="c-emp-add">เพิ่มผู้ที่เลือกเข้ารายชื่อ</button><span class="muted small" id="c-emp-count"></span></div>
+      <textarea id="c-players" placeholder="สมชาย ใจดี, ผยก.&#10;สุดา ศรีสุข, ผปก."></textarea>
+      <div class="row" style="margin-top:8px"><button class="gold" id="c-save-players">บันทึกรายชื่อ (รีเซ็ตคะแนน)</button></div>
+    </div>
+
+    <div class="panel">
+      <h2>ตัวช่วยชีวิต (เฉพาะรอบชิงชนะเลิศ)</h2>
+      <p class="muted small">ทีมจับฉลากเลือกตัวช่วยกันเอง ระบบไม่แสดงรายการสิทธิ์บนจอ ทำหน้าที่จับเวลาให้อย่างเดียว ตั้งเวลาได้ตามต้องการ</p>
+      <div class="row">
+        <span class="row" style="gap:6px"><span class="muted small">เวลาที่ให้ใช้ตัวช่วย (วินาที)</span><input id="c-lf-sec" type="number" min="5" max="300" style="width:90px"></span>
+        <span class="row" style="gap:6px"><span class="muted small">ใช้ได้กี่ครั้งต่อทีม</span><input id="c-lf-per" type="number" min="1" max="5" style="width:80px"></span>
+        <button class="gold" id="c-save-lf">บันทึกตัวช่วย</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>นำเข้าคำถามจาก Excel</h2>
+      <p class="muted small">หัวคอลัมน์ในแถวแรก: <b>รอบ | คำถาม | A | B | C | D | เฉลย | คำใบ้ | รูป</b><br>
+      รอบใส่ 1-3 · รอบ 1 ต้องมี A-D และเฉลยเป็น A B C หรือ D · รอบ 2-3 เว้น A-D ไว้ เฉลยพิมพ์เป็นข้อความ · คำใบ้หลายอันคั่นด้วย |</p>
+      <textarea id="imp-paste" placeholder="รอบ	คำถาม	A	B	C	D	เฉลย	คำใบ้"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="gold" id="imp-paste-btn">นำเข้าจากข้อความที่วาง</button>
+        <button id="imp-file-btn">อัปโหลดไฟล์ .xlsx / .csv</button>
+        <input type="file" id="imp-file" accept=".xlsx,.xls,.csv,.txt" hidden>
+      </div>
+      <div class="msg small" id="imp-msg" style="margin-top:8px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>เพิ่มคำถาม</h2>
+      <div class="row">
+        <div style="flex:1;min-width:120px"><label class="f" for="q-round">รอบ</label>
+          <select id="q-round"><option value="1">1 Warm Up (4 ตัวเลือก)</option><option value="2">2 Zoom In (คำใบ้)</option><option value="3">3 The Final Q (ตอบปากเปล่า)</option></select></div>
+      </div>
+      <label class="f" for="q-text" style="margin-top:8px">คำถาม</label>
+      <textarea id="q-text" style="min-height:56px"></textarea>
+      <div id="q-choice-box">
+        <div class="row" style="margin-top:8px">
+          <div style="flex:1;min-width:140px"><label class="f" for="q-a">ตัวเลือก A</label><input id="q-a"></div>
+          <div style="flex:1;min-width:140px"><label class="f" for="q-b">ตัวเลือก B</label><input id="q-b"></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div style="flex:1;min-width:140px"><label class="f" for="q-c">ตัวเลือก C</label><input id="q-c"></div>
+          <div style="flex:1;min-width:140px"><label class="f" for="q-d">ตัวเลือก D</label><input id="q-d"></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div style="flex:1;min-width:140px"><label class="f" for="q-ans">คำตอบที่ถูก</label><input id="q-ans" placeholder="ใส่ A B C D หรือข้อความคำตอบ"></div>
+        <div style="flex:2;min-width:180px"><label class="f" for="q-hints">คำใบ้ (คั่นด้วย |)</label><input id="q-hints" placeholder="ใบ้ 1 | ใบ้ 2 | ใบ้ 3"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:240px"><label class="f" for="q-img">รูปประกอบ (ไม่บังคับ) — ใส่ชื่อไฟล์ในโฟลเดอร์ img ของ repo เช่น img/q1.jpg หรือวางลิงก์รูปเต็ม</label>
+          <input id="q-img" placeholder="img/q1.jpg"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="gold" id="q-add">เพิ่มคำถาม</button><button id="q-sample">ใส่ชุดคำถามตัวอย่าง</button></div>
+      <div class="msg small" id="c-msg" style="margin-top:8px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>คลังคำถาม (<span id="q-count">0</span> ข้อ)</h2>
+      <div id="q-list"></div>
+      <div class="row" style="margin-top:12px"><button id="c-reset" style="color:var(--bad)">รีเซ็ตเกม (คะแนน สถานะ ตัวช่วย)</button></div>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="ov"><div class="in">
+  <div class="kind" id="ov-kind"></div>
+  <div class="who" id="ov-who"></div>
+  <div class="small muted" id="ov-sub"></div>
+  <div class="cd" id="ov-cd"></div>
+</div></div>
+
+<script type="module">
+/* ใส่ค่า firebaseConfig ของโปรเจกต์เดียวกับระบบวงล้อได้เลย */
+const firebaseConfig = {
+  apiKey: "AIzaSyCLkzc1Yz-Ar0xUoXqWWMP6Qp1jjeDoMqM",
+  authDomain: "golden-q-qshe.firebaseapp.com",
+  projectId: "golden-q-qshe",
+  storageBucket: "golden-q-qshe.firebasestorage.app",
+  messagingSenderId: "1071473345905",
+  appId: "1:1071473345905:web:c8d0a7d77021cef4d3e2d0"
+};
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+(function(){
+const $=id=>document.getElementById(id);
+function showErr(m){const b=document.getElementById('errbar');if(b){b.style.display='block';b.textContent='ข้อผิดพลาด: '+m+' (ส่งภาพนี้ให้ผู้ดูแลระบบ)'}}
+window.addEventListener('error',e=>showErr((e.message||'')+' @'+(e.lineno||'')));
+window.addEventListener('unhandledrejection',e=>showErr('promise: '+((e.reason&&(e.reason.code||e.reason.message))||e.reason)));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const secOf=r=>{const v=Number((state&&state.secs&&state.secs[r])||0);return v>0?v:(ROUNDS[r]||ROUNDS[1]).sec};
+const ROUNDS={1:{name:'รอบที่ 1 · ตอบพร้อมกัน',sec:5,pts:1},2:{name:'รอบที่ 2 · เขียนตอบ',sec:10,pts:1},3:{name:'รอบชิงชนะเลิศ',sec:30,pts:1}};
+const LF={phone:{label:'ถามคนในห้อง',short:'ถามห้อง',sec:20},swap:{label:'เปลี่ยนคำถาม',short:'เปลี่ยนข้อ',sec:0},book:{label:'เปิดหนังสือ',short:'หนังสือ',sec:45}};
+function lfSec(){return Math.max(5,Math.min(300,Number(state&&state.lfSec)||20))}
+function lfUsed(p){const per=Math.max(1,Number(state&&state.lfPerTeam)||1),u=Number(p.lfSpins)||0;const done=u>=per;
+  return `<span style="display:inline-block;font-size:11px;padding:1px 7px;margin:2px 3px 0 0;border-radius:99px;border:1px solid ${done?'rgba(255,255,255,.15)':'var(--gold)'};color:${done?'#6F6550':'var(--gold-hi)'}">ตัวช่วย ${u}/${per}</span>`}
+const SAMPLE=[
+ {round:1,q:'5ส ประกอบด้วยกี่ขั้นตอน',choices:['3','4','5','6'],ans:'C',hints:[]},
+ {round:1,q:'วงจร PDCA ตัว A ย่อมาจากอะไร',choices:['Analyze','Act','Audit','Assess'],ans:'B',hints:[]},
+ {round:1,q:'ถังดับเพลิงชนิดใดเหมาะกับไฟจากอุปกรณ์ไฟฟ้า',choices:['น้ำ','โฟม','CO2','ผงเคมีชนิด A'],ans:'C',hints:[]},
+ {round:1,q:'ISO 50001 เป็นมาตรฐานด้านใด',choices:['คุณภาพ','สิ่งแวดล้อม','พลังงาน','ความปลอดภัย'],ans:'C',hints:[]},
+ {round:2,q:'เครื่องมือคุณภาพชิ้นนี้คืออะไร',ans:'ผังก้างปลา (Fishbone Diagram)',hints:['ใช้หาสาเหตุของปัญหา','มีเส้นกลางและเส้นแยกออกด้านข้าง','ตั้งชื่อตามสัตว์ชนิดหนึ่ง']},
+ {round:2,q:'สัญลักษณ์นี้หมายถึงอะไร',ans:'จุดรวมพล (Assembly Point)',hints:['เจอได้ในแผนฉุกเฉิน','มีลูกศรและรูปคน','ต้องไปที่นี่เมื่อได้ยินสัญญาณอพยพ']},
+ {round:2,q:'กิจกรรมนี้คืออะไร',ans:'QCC (Quality Control Circle)',hints:['ทำกันเป็นกลุ่มย่อย','มีการนำเสนอผลงานประจำปี','ย่อด้วยอักษรสามตัว']},
+ {round:3,q:'TPM ย่อมาจากอะไร',ans:'Total Productive Maintenance',hints:[]},
+ {round:3,q:'เสาหลักแรกของ TPM ที่เน้นให้พนักงานดูแลเครื่องจักรด้วยตนเอง เรียกว่าอะไร',ans:'Autonomous Maintenance (การบำรุงรักษาด้วยตนเอง)',hints:[]},
+ {round:3,q:'ลำดับขั้นการควบคุมอันตราย (Hierarchy of Control) ขั้นที่ได้ผลที่สุดคืออะไร',ans:'การกำจัดอันตรายออกไป (Elimination)',hints:[]}
+];
+
+let lastErr='';
+async function reloadData(){
+  try{
+    const [a,b]=await Promise.all([getDoc(doc(fs,'qmaster','state')),getDoc(doc(fs,'qmaster','bank'))]);
+    state=a.exists()?{...DEF_STATE,...a.data()}:{...DEF_STATE};
+    bank=(b.exists()&&b.data().questions)||[];lastErr='';render();preloadImages();
+  }catch(e){lastErr='โหลดไม่สำเร็จ: '+(e.code||e.message);render()}
+}
+let votes=[],unsubV=null,myVote=null;
+const DEEP=/vote/i.test(location.hash+location.search);
+let fs=null,auth=null,isAdmin=false,role=DEEP?'vote':(localStorage.getItem('qmaster-role')||null);
+let state=null,bank=[],unsubS=null,unsubB=null,sel=new Set(),tick=null;
+
+const LIVES=3;
+const DEF_STATE={started:false,secs:{},turn:null,poll:null,showScores:false,paused:null,prevScores:null,lucky:null,luckyWon:[],lfSec:20,lfPerTeam:1,round:1,qid:null,phase:'idle',endsAt:0,hintShown:0,asked:[],lifeline:null,
+  players:[],managers:['ผจ.ส่วน ก','ผจ.ส่วน ข','ผจ.ส่วน ค'],winner:null,tie:null};
+
+/* ---------- boot ---------- */
+async function boot(){
+  if(String(firebaseConfig.apiKey).startsWith('ใส่')){$('role-msg').textContent='ยังไม่ได้ใส่ค่า firebaseConfig ในไฟล์ index.html';return}
+  const app=initializeApp(firebaseConfig);auth=getAuth(app);fs=getFirestore(app);
+  onAuthStateChanged(auth,async u=>{
+    if(!u){try{await signInAnonymously(auth)}catch(e){$('role-msg').textContent='เชื่อมต่อไม่สำเร็จ ตรวจว่าเปิด Anonymous sign-in ใน Firebase'}return}
+    isAdmin=false;
+    if(!u.isAnonymous){try{isAdmin=(await getDoc(doc(fs,'admins',u.uid))).exists()}catch(e){}}
+    if(!unsubS){
+      unsubS=onSnapshot(doc(fs,'qmaster','state'),s=>{state=s.exists()?{...DEF_STATE,...s.data()}:{...DEF_STATE};render()},e=>{lastErr='สถานะเกม: '+(e.code||e.message)});
+      syncVotes();
+      unsubB=onSnapshot(doc(fs,'qmaster','bank'),s=>{bank=(s.exists()&&s.data().questions)||[];render();preloadImages()},e=>{lastErr='คลังคำถาม: '+(e.code||e.message);render()});
+    }
+    if(role)show(role);else{$('p-login').hidden=true}
+  });
+}
+function syncVotes(){
+  const need=(role==='stage'||role==='remote');
+  if(need&&!unsubV&&fs){
+    unsubV=onSnapshot(collection(fs,'qmvotes'),s=>{votes=s.docs.map(d=>d.data()||{});if(role==='stage')renderStage();if(role==='remote')renderPollCounts()},()=>{});
+  } else if(!need&&unsubV){unsubV();unsubV=null;votes=[]}
+}
+async function saveState(patch){
+  const next={...(state||DEF_STATE),...patch};
+  state=next;render();
+  try{await setDoc(doc(fs,'qmaster','state'),next)}catch(e){msg('r-msg','บันทึกไม่สำเร็จ ต้องเข้าสู่ระบบทีมงานก่อน')}
+}
+const imgCache=new Map();
+function preloadImages(){
+  const srcs=[...new Set((bank||[]).map(q=>q&&q.img).filter(Boolean))];
+  srcs.forEach(src=>{
+    if(imgCache.has(src))return;
+    const im=new Image();
+    imgCache.set(src,{st:'loading',el:im});
+    im.onload=()=>{imgCache.get(src).st='ok';updateImgInfo()};
+    im.onerror=()=>{imgCache.get(src).st='bad';updateImgInfo()};
+    im.src=src;
+  });
+  updateImgInfo();
+}
+function updateImgInfo(){
+  const box=$('r-imgload');if(!box)return;
+  const all=[...imgCache.values()];
+  if(!all.length){box.textContent='คำถามชุดนี้ไม่มีรูปประกอบ';return}
+  const ok=all.filter(x=>x.st==='ok').length,bad=all.filter(x=>x.st==='bad').length;
+  box.textContent=`โหลดรูปล่วงหน้า ${ok}/${all.length} รูป`+(bad?` · โหลดไม่ได้ ${bad} รูป (ตรวจชื่อไฟล์ใน img/)`:'')
+    +(ok===all.length?' · พร้อมแล้ว ขึ้นจอได้ทันที':'');
+}
+async function saveBank(list){bank=list;try{await setDoc(doc(fs,'qmaster','bank'),{questions:list})}catch(e){msg('c-msg','บันทึกไม่สำเร็จ ต้องเข้าสู่ระบบทีมงานก่อน')}}
+function msg(id,t){const el=$(id);if(el){el.textContent=t||'';setTimeout(()=>{if(el.textContent===t)el.textContent=''},4000)}}
+
+function show(r){
+  role=r;syncVotes();localStorage.setItem('qmaster-role',r);
+  ['p-role','p-stage','p-remote','p-setup','p-login','p-vote'].forEach(x=>$(x).hidden=true);
+  if((r==='remote'||r==='setup')&&!isAdmin){$('p-login').hidden=false;$('wrap').classList.remove('stage');return}
+  $('wrap').classList.toggle('stage',r==='stage');
+  $({stage:'p-stage',remote:'p-remote',setup:'p-setup',vote:'p-vote'}[r]).hidden=false;
+  if(r==='setup')fillSetup();
+  if(r==='stage')showQR();
+  render();
+}
+document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>show(b.dataset.role));
+const QR_KNOWN_URL='https://pttgspqshe.github.io/GSPMaster-QSHEDAY/#vote';
+const QR_KNOWN_SVG=`<svg style="width:100%;height:100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37"><path stroke="#0a0907" d="M2 2.5h7m2 0h3m2 0h1m4 0h1m3 0h1m2 0h7m-33 1h1m5 0h1m1 0h2m1 0h1m1 0h1m1 0h3m1 0h3m1 0h2m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h1m3 0h1m2 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m1 0h1m3 0h1m3 0h3m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h2m6 0h1m1 0h1m5 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m2 0h3m2 0h1m2 0h5m1 0h1m2 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-24 1h1m1 0h4m1 0h2m1 0h3m1 0h2m-25 1h1m1 0h1m1 0h1m1 0h1m3 0h3m2 0h3m2 0h2m6 0h1m2 0h1m-28 1h1m3 0h1m2 0h1m2 0h1m5 0h1m1 0h1m1 0h4m3 0h2m-33 1h3m3 0h2m1 0h5m3 0h1m4 0h1m2 0h1m1 0h1m2 0h3m-33 1h1m2 0h3m1 0h1m2 0h1m5 0h1m3 0h3m1 0h1m3 0h1m-29 1h2m1 0h1m1 0h2m1 0h4m3 0h1m4 0h3m1 0h3m2 0h1m1 0h1m-32 1h2m1 0h2m3 0h1m1 0h3m2 0h1m4 0h2m1 0h2m2 0h1m1 0h1m2 0h1m-31 1h3m1 0h3m3 0h1m5 0h1m1 0h1m1 0h1m2 0h1m3 0h4m-33 1h2m2 0h2m1 0h1m1 0h2m1 0h4m1 0h1m1 0h6m1 0h2m3 0h1m-29 1h2m1 0h1m2 0h2m1 0h1m3 0h2m2 0h2m2 0h3m2 0h1m-29 1h2m2 0h1m1 0h2m1 0h5m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m3 0h1m-32 1h1m2 0h1m1 0h2m2 0h1m2 0h3m3 0h1m1 0h2m2 0h1m1 0h1m3 0h3m-33 1h1m1 0h3m2 0h1m1 0h1m1 0h1m2 0h2m1 0h2m1 0h5m2 0h2m2 0h1m-31 1h3m2 0h1m1 0h1m1 0h2m2 0h3m1 0h2m1 0h2m1 0h4m1 0h1m2 0h1m-32 1h2m1 0h1m3 0h2m1 0h1m2 0h5m1 0h2m1 0h2m4 0h1m1 0h2m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h3m4 0h2m1 0h1m1 0h4m1 0h2m-32 1h3m1 0h1m1 0h2m4 0h1m2 0h3m1 0h4m1 0h1m5 0h1m-32 1h1m1 0h1m1 0h1m1 0h6m1 0h1m1 0h3m1 0h3m1 0h7m1 0h2m-25 1h1m1 0h2m2 0h1m1 0h1m4 0h1m2 0h1m3 0h2m-30 1h7m3 0h1m1 0h3m1 0h2m3 0h4m1 0h1m1 0h1m1 0h3m-33 1h1m5 0h1m2 0h4m3 0h1m2 0h4m1 0h1m3 0h1m3 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h1m2 0h1m4 0h2m2 0h6m2 0h1m-33 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h1m1 0h1m2 0h1m1 0h2m4 0h1m3 0h1m-33 1h1m1 0h3m1 0h1m1 0h6m3 0h2m1 0h1m1 0h4m2 0h1m1 0h1m1 0h1m-33 1h1m5 0h1m3 0h3m1 0h2m1 0h1m2 0h2m1 0h1m1 0h1m2 0h1m2 0h1m-32 1h7m1 0h1m2 0h1m1 0h2m1 0h3m1 0h2m1 0h3m2 0h1m2 0h2"/></svg>`;
+function voteURL(){return location.origin+location.pathname+'#vote'}
+let qrDone=false;
+function showQR(){
+  const box=$('s-qr');if(!box||qrDone)return;
+  $('s-qr-url').textContent=voteURL().replace(/^https?:\/\//,'');
+  const draw=()=>{if(qrDone||!window.QRCode)return;box.innerHTML='';
+    new window.QRCode(box,{text:voteURL(),width:132,height:132,colorDark:'#0A0907',colorLight:'#F6DC8A'});qrDone=true};
+  if(voteURL()===QR_KNOWN_URL){box.innerHTML=QR_KNOWN_SVG;qrDone=true;return}
+  if(window.QRCode)return draw();
+  const sc=document.createElement('script');
+  sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  sc.onload=draw;sc.onerror=()=>{box.innerHTML='<span class="small" style="color:#0A0907;padding:6px">เปิดลิงก์ท้ายจอ</span>'};
+  document.head.appendChild(sc);
+}
+const rvl=$('r-votelink');if(rvl)rvl.value=voteURL();
+const rcl=$('r-copylink');
+if(rcl)rcl.onclick=async()=>{try{await navigator.clipboard.writeText(voteURL());msg('r-msg','คัดลอกลิงก์แล้ว')}catch(e){$('r-votelink').select();msg('r-msg','กด Ctrl+C เพื่อคัดลอก')}};
+$('s-exit').onclick=()=>{$('s-exit').blur();exitRole()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&role==='stage')exitRole()});
+function exitRole(){$('r-exit').click()}
+$('v-name-save').onclick=saveVoterName;
+$('v-name').onkeydown=e=>{if(e.key==='Enter')saveVoterName()};
+$('r-exit').onclick=$('c-exit').onclick=$('l-exit').onclick=$('v-exit').onclick=()=>{localStorage.removeItem('qmaster-role');['p-stage','p-remote','p-setup','p-login','p-vote'].forEach(x=>$(x).hidden=true);$('p-role').hidden=false;$('wrap').classList.remove('stage');role=null};
+$('l-btn').onclick=async()=>{
+  $('l-msg').textContent='กำลังเข้าสู่ระบบ...';
+  try{
+    const c=await signInWithEmailAndPassword(auth,$('l-email').value.trim(),$('l-pass').value);
+    const ok=(await getDoc(doc(fs,'admins',c.user.uid))).exists();
+    if(!ok){$('l-msg').textContent='บัญชีนี้ยังไม่ได้เป็นทีมงาน เพิ่ม UID นี้ในคอลเลกชัน admins: '+c.user.uid;return}
+    isAdmin=true;$('l-msg').textContent='';show(role||'remote');
+  }catch(e){
+    const m={'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง','auth/operation-not-allowed':'ยังไม่ได้เปิด Email/Password ใน Firebase','auth/unauthorized-domain':'ยังไม่ได้เพิ่มโดเมนนี้ใน Authorized domains'};
+    $('l-msg').textContent=(m[e.code]||'เข้าสู่ระบบไม่สำเร็จ')+' ('+(e.code||'')+')';
+  }
+};
+$('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-btn').click()});
+
+/* ---------- helpers ---------- */
+const curQ=()=>bank.find(q=>q.id===state?.qid)||null;
+const alive=()=>(state?.players||[]).filter(p=>!p.out);
+function letter(i){return 'ABCD'[i]}
+function answerText(q){
+  if(!q)return'';
+  if(q.choices&&q.choices.length){const i='ABCD'.indexOf(String(q.ans).trim().toUpperCase());return i>=0?letter(i)+'. '+q.choices[i]:q.ans}
+  return q.ans;
+}
+
+/* ---------- render ---------- */
+function render(){
+  if(!state)return;
+  if(role==='stage')renderStage();
+  if(role==='remote')renderRemote();
+  if(role==='setup')renderBankList();
+  if(role==='vote')renderVote();
+  renderOverlay();
+}
+function renderStage(){
+  const q=curQ(),R=ROUNDS[state.round]||ROUNDS[1];
+  const tieOn=!!(state.tie&&state.tie.show)&&!state.winner;
+  $('s-round').textContent=R.name;
+  const st=state.winner?'ประกาศผู้ชนะ':tieOn?'ข้อตัดสิน':!state.started?'ยังไม่เริ่มเกม':state.phase==='ask'?(state.paused!=null?'หยุดเวลาชั่วคราว':'กำลังจับเวลา'):state.phase==='reveal'?'เฉลยแล้ว':'พร้อมข้อถัดไป';
+  $('s-status').textContent=st;
+  $('s-cat').textContent=state.tie&&state.tie.show?'ข้อตัดสิน · ทายตัวเลข ใครใกล้ที่สุดไปต่อ':'';
+  $('s-q').textContent=state.winner?'ผู้ชนะ Q Master 2026':tieOn?(state.tie.q||'ข้อตัดสิน'):!state.started?'พร้อมแล้วหรือยัง':(q?q.q:'รอคำถามข้อถัดไป');
+  const sumOnly=!!state.showScores&&!state.winner;
+  { const qb=document.querySelector('#p-stage .q-box');if(qb)qb.style.minHeight=sumOnly?'0':'';}
+  if(sumOnly){$('s-q').textContent='';$('s-status').textContent='สรุปคะแนน'}
+  const showAns=state.phase==='reveal'&&!tieOn&&!sumOnly;
+  const ai=q&&q.choices?'ABCD'.indexOf(String(q.ans).trim().toUpperCase()):-1;
+  const showChoices=state.phase==='ask'||state.phase==='reveal';
+  { const ib=$('s-img-box'),im=$('s-img'),src=(!state.winner&&!tieOn&&!sumOnly&&q&&q.img)?q.img:'';
+    if(src){if(im.getAttribute('src')!==src)im.setAttribute('src',src);ib.hidden=false}
+    else {ib.hidden=true;im.removeAttribute('src')} }
+  $('s-choices').innerHTML=(q&&q.choices&&q.choices.length&&!state.winner&&!tieOn&&showChoices&&!sumOnly)?q.choices.map((c,i)=>
+    `<div class="ch ${showAns?(i===ai?'correct':'dim'):''}"><b>${letter(i)}</b><span>${esc(c)}</span></div>`).join(''):'';
+  const hints=(tieOn||sumOnly)?[]:((q&&q.hints)||[]);
+  $('s-hints').innerHTML=hints.slice(0,state.hintShown||0).map((h,i)=>`<div class="hint">คำใบ้ ${i+1}: ${esc(h)}</div>`).join('');
+  const t=$('s-timer');
+  t.hidden=!(state.phase==='ask'&&(state.endsAt||state.paused!=null)&&!tieOn&&!sumOnly);
+  $('s-ans').hidden=!showAns;
+  $('s-ans').textContent=showAns?('เฉลย: '+answerText(q)):'';
+  if(state.winner){
+    const w=(state.players||[]).find(p=>p.n===state.winner);
+    $('s-ans').hidden=false;$('s-ans').textContent=w?('🏆 '+w.name+' — '+w.score+' คะแนน'):'';
+  }
+  const top=Math.max(0,...alive().map(p=>p.score||0));
+  const rr=Number(state.round)||1;
+  const r1=false;
+  const turnN=currentTurn();
+  $('s-turn').hidden=!(rr===3&&!state.winner&&turnN!=null);
+  if(rr===3&&turnN!=null){const tp=(state.players||[]).find(x=>x.n===turnN);$('s-turn').innerHTML=`ถึงตา <b class="foil">${esc(tp?tp.name:'')}</b> เลือกซองคำถาม`}
+  const sum=!!state.showScores||!!state.winner;
+  $('s-alive').hidden=!sum||!!state.winner;
+  if(sum&&!state.winner)$('s-alive').innerHTML=`เหลือ <b class="foil">${alive().length}</b> ทีม · รอบนี้ข้อละ ${(ROUNDS[rr]||ROUNDS[1]).pts} คะแนน`;
+  if(sumOnly){const tb=$('s-timer');tb.hidden=true}
+  $('s-sum-h').hidden=!state.showScores||!!state.winner;
+  $('s-sum-h').textContent='สรุปคะแนน · '+R.name;
+  $('s-board').hidden=!sum;
+  $('s-qr-box').style.display=state.winner?'none':'';
+  $('s-poll').innerHTML=sumOnly?'':pollBars();
+  $('s-board').innerHTML=(state.players||[]).map(p=>{
+    const used=Number(state.round)===3?lfUsed(p):'';
+    const lives=Math.max(0,p.lives==null?LIVES:p.lives);
+    const mid=r1?`<div class="s" style="font-size:22px;color:var(--bad)">${'♥'.repeat(lives)||'✕'}</div>`
+                :`<div class="s foil">${p.score||0}</div>`;
+    const isTurn=rr===3&&p.n===turnN&&!p.out;
+    return `<div class="pl ${p.out?'out':''} ${isTurn||(!p.out&&(p.score||0)===top&&top>0)?'lead':''}">
+      <div class="n">${esc(p.name)}</div>${mid}<div class="lf">${used}</div></div>`;
+  }).join('');
+}
+function aliveSorted(list){return (list||state.players||[]).filter(p=>!p.out).sort((a,b)=>a.n-b.n)}
+function currentTurn(){
+  const a=aliveSorted();if(!a.length)return null;
+  const t=state.turn;return (t!=null&&a.some(p=>p.n===t))?t:a[0].n;
+}
+function nextAfter(n,players){
+  const a=aliveSorted(players);if(!a.length)return null;
+  return (a.find(p=>p.n>n)||a[0]).n;
+}
+function pollCounts(){
+  const pid=state&&state.poll&&state.poll.id;const c={A:0,B:0,C:0,D:0};
+  if(!pid)return c;
+  votes.forEach(v=>{if(v&&v.pollId===pid&&c[v.choice]!=null)c[v.choice]++});
+  return c;
+}
+function pollTexts(){
+  const pid=state&&state.poll&&state.poll.id,map={};
+  if(!pid)return [];
+  votes.forEach(v=>{if(v&&v.pollId===pid&&v.text){const k=String(v.text).trim();if(!k)return;
+    const key=k.toLowerCase();map[key]=map[key]||{text:k,n:0};map[key].n++}});
+  return Object.values(map).sort((a,b)=>b.n-a.n);
+}
+function pollBars(){
+  const poll=state&&state.poll;
+  if(!poll||!poll.show||state.winner)return '';
+  if(poll.mode==='text'){
+    const list=pollTexts(),tot=list.reduce((a,x)=>a+x.n,0);
+    const rows=list.slice(0,8).map(x=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="flex:1;font-size:20px;color:var(--ivory);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(x.text)}</span>
+      <span style="width:120px;text-align:right;font-size:18px;color:var(--gold-hi)">${x.n} เสียง</span></div>`).join('')
+      ||'<div class="muted" style="font-size:18px">ยังไม่มีคำตอบส่งเข้ามา</div>';
+    return `<div style="border:1px solid var(--line);border-radius:14px;padding:16px">
+      <div class="small" style="color:var(--gold);letter-spacing:3px;margin-bottom:10px">คำตอบจากผู้ชม · ${tot} เสียง${poll.open?'':' (ปิดรับแล้ว)'}</div>${rows}</div>`;
+  }
+  const c=pollCounts(),total=c.A+c.B+c.C+c.D,q=curQ();
+  const rows=['A','B','C','D'].map(k=>{
+    const n=c[k],pct=total?Math.round(n/total*100):0;
+    const label=q&&q.choices&&q.choices['ABCD'.indexOf(k)]?q.choices['ABCD'.indexOf(k)]:'';
+    return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="width:34px;font-family:var(--serif);font-weight:600;color:var(--gold-hi);font-size:22px">${k}</span>
+      <span style="flex:1;background:rgba(255,255,255,.07);border-radius:99px;height:22px;overflow:hidden">
+        <span style="display:block;height:100%;width:${pct}%;background:var(--foil)"></span></span>
+      <span style="width:120px;text-align:right;font-size:18px;color:var(--ivory)">${pct}% (${n})</span>
+      <span style="flex:1;font-size:16px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(label)}</span>
+    </div>`}).join('');
+  return `<div style="border:1px solid var(--line);border-radius:14px;padding:16px">
+    <div class="small" style="color:var(--gold);letter-spacing:3px;margin-bottom:10px">ผลโหวตจากผู้ชม · ${total} เสียง${poll.open?'':' (ปิดรับแล้ว)'}</div>${rows}</div>`;
+}
+function renderPollCounts(){
+  const box=$('poll-counts');if(!box)return;
+  const poll=state&&state.poll;
+  if(!poll){box.innerHTML='<span class="muted">ยังไม่ได้เปิดโหวต</span>';return}
+  const txt=poll.mode==='text',c=pollCounts(),tl=txt?pollTexts():[];
+  const total=txt?tl.reduce((a,x)=>a+x.n,0):(c.A+c.B+c.C+c.D);
+  box.innerHTML=`สถานะ: ${poll.open?'<b style="color:var(--ok)">กำลังเปิดรับโหวต</b>':'ปิดรับแล้ว'} · แบบ ${txt?'พิมพ์ตอบ':'A-D'} · แสดงบนจอ: ${poll.show?'ใช่':'ไม่'} · รวม ${total} เสียง<br>`
+    +(txt?(tl.slice(0,6).map(x=>esc(x.text)+' — '+x.n).join('<br>')||'ยังไม่มีคำตอบ'):`A ${c.A} · B ${c.B} · C ${c.C} · D ${c.D}`);
+}
+function renderVote(){
+  const poll=state&&state.poll,q=curQ();
+  { const ni=$('v-name');
+    if(ni&&document.activeElement!==ni&&!ni.value)ni.value=voterName();
+    if($('v-name-info')&&!$('v-name-info').textContent)
+      $('v-name-info').textContent=voterName()?('ลุ้นรางวัลในชื่อ "'+voterName()+'"'):'ใส่ชื่อแล้วกดบันทึก เพื่อมีสิทธิ์ลุ้นของรางวัลระหว่างพักรอบ';
+  }
+  const open=!!(poll&&poll.open),textMode=open&&poll.mode==='text';
+  $('v-status').textContent=open?(textMode?'พิมพ์คำตอบของคุณแล้วกดส่ง แก้ไขได้จนกว่าจะปิดรับ':'เลือกคำตอบที่คิดว่าถูก เปลี่ยนใจได้จนกว่าจะปิดรับ'):'ยังไม่เปิดให้โหวต รอทีมงานเปิดรอบถัดไป';
+  $('v-q').textContent=open&&q?q.q:'';
+  { const vi=$('v-img'),src=(open&&q&&q.img)?q.img:'';
+    if(src){if(vi.getAttribute('src')!==src)vi.setAttribute('src',src);vi.hidden=false}
+    else {vi.hidden=true;vi.removeAttribute('src')} }
+  const tb=$('v-text-box');if(tb)tb.hidden=!textMode;
+  $('v-choices').innerHTML=(open&&!textMode)?['A','B','C','D'].map(k=>{
+    const i='ABCD'.indexOf(k),label=q&&q.choices&&q.choices[i]?q.choices[i]:'';
+    const mine=myVote&&poll&&myVote.pollId===poll.id&&myVote.choice===k;
+    return `<button class="${mine?'gold':''}" data-vote="${k}" style="padding:18px;border-radius:14px;font-size:20px;text-align:left">
+      <b>${k}</b>${label?' · '+esc(label):''}</button>`}).join(''):'';
+  $('v-choices').querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>castVote(b.dataset.vote));
+}
+function voterName(){return (localStorage.getItem('qm-voter-name')||'').slice(0,40)}
+function saveVoterName(){
+  const v=$('v-name').value.trim().slice(0,40);
+  localStorage.setItem('qm-voter-name',v);
+  $('v-name-info').textContent=v?('บันทึกชื่อ "'+v+'" แล้ว จะใช้ชื่อนี้ลุ้นรางวัล'):'ยังไม่ได้ใส่ชื่อ โหวตได้ตามปกติ แต่จะไม่ถูกสุ่มรางวัล';
+  if(v&&myVote)sendVote({...myVote,name:v},'อัปเดตชื่อแล้ว');
+}
+async function sendVote(payload,okMsg){
+  const u=auth&&auth.currentUser;if(!u){msg('v-msg','เชื่อมต่อไม่สำเร็จ ลองรีเฟรช');return}
+  try{await setDoc(doc(fs,'qmvotes',u.uid),payload);myVote=payload;renderVote();msg('v-msg',okMsg)}
+  catch(e){msg('v-msg','ส่งไม่สำเร็จ ('+(e.code||e.message)+')')}
+}
+async function castVote(choice){
+  const poll=state&&state.poll;
+  if(!poll||!poll.open){msg('v-msg','ยังไม่เปิดให้โหวต');return}
+  await sendVote({pollId:poll.id,choice,name:voterName(),at:new Date().toISOString()},'บันทึกคำตอบ '+choice+' แล้ว');
+}
+async function castText(){
+  const poll=state&&state.poll,t=$('v-text').value.trim();
+  if(!poll||!poll.open){msg('v-msg','ยังไม่เปิดให้โหวต');return}
+  if(!t){msg('v-msg','พิมพ์คำตอบก่อน');return}
+  await sendVote({pollId:poll.id,text:t.slice(0,120),name:voterName(),at:new Date().toISOString()},'ส่งคำตอบแล้ว');
+}
+function renderRemote(){
+  const q=curQ(),R=ROUNDS[state.round]||ROUNDS[1];
+  $('r-round').value=String(state.round);
+  { const pts=$('r-pts'); if(pts) pts.textContent=R.pts; }
+  if(document.activeElement!==$('r-sec'))$('r-sec').value=secOf(state.round);
+  const R1=Number(state.round)||1;
+  const pool=bank.filter(x=>Number(x.round)===R1);
+  const left=pool.filter(x=>!(state.asked||[]).includes(x.id)).length;
+  $('r-progress').textContent=`เหลือ ${left}/${pool.length} ข้อ`;
+  { const pk=$('r-pick'),keep=pk.value;
+    pk.innerHTML=pool.length?pool.map((x,i)=>{
+      const done=(state.asked||[]).includes(x.id);
+      const t=x.q.length>46?x.q.slice(0,45)+'…':x.q;
+      return `<option value="${x.id}">${done?'✓ ':''}ข้อ ${i+1} · ${esc(t)}</option>`}).join('')
+      :'<option value="">ยังไม่มีคำถามในรอบนี้</option>';
+    if(pool.some(x=>x.id===keep))pk.value=keep; else if(q)pk.value=q.id;
+  }
+  $('r-scores').textContent=state.showScores?'ซ่อนสรุปคะแนน':'สรุปคะแนนขึ้นจอ';
+  { const names=voterNames(),won=(state.luckyWon||[]).length;
+    $('lk-info').textContent=`ผู้ชมที่ใส่ชื่อไว้ ${names.length} คน · ได้รางวัลแล้ว ${won} คน`
+      +(state.lucky?` · กำลังขึ้นจอ: ${state.lucky.name}`:''); }
+  $('r-pause').textContent=state.paused!=null?'▶ เดินเวลาต่อ':'⏸ หยุดเวลาชั่วคราว';
+  { const ri=$('r-img');if(ri){ri.hidden=!(q&&q.img);if(q&&q.img)ri.textContent='ข้อนี้มีรูปประกอบ: '+q.img} }
+  $('r-pause').disabled=state.phase!=='ask';
+  $('r-undo-reset').hidden=!state.prevScores;
+  $('r-current').innerHTML=q?`<div class="t">${esc(q.q)}</div>
+    ${q.choices?`<div class="small muted" style="margin-top:4px">${q.choices.map((c,i)=>letter(i)+'. '+esc(c)).join(' &nbsp; ')}</div>`:''}
+    <div class="small" style="margin-top:6px;color:var(--ok)">เฉลย: ${esc(answerText(q))}</div>
+    <div class="small muted">สถานะ: ${!state.started?'ยังไม่เริ่มเกม':state.phase==='ask'?'กำลังจับเวลา':state.phase==='reveal'?'เฉลยแล้ว':'พร้อมเริ่ม'}${(q.hints||[]).length?` · คำใบ้ปล่อยแล้ว ${state.hintShown||0}/${q.hints.length}`:''}</div>`
+    :'<span class="muted">ยังไม่ได้เลือกคำถาม</span>';
+  $('r-players').innerHTML=(state.players||[]).map(p=>{
+    const lives=Math.max(0,p.lives==null?LIVES:p.lives);
+    const badge=`<span class="sc foil">${p.score||0}</span>`;
+    return `<button class="pbtn ${sel.has(p.n)?'sel':''} ${p.out?'out':''}" data-p="${p.n}">
+    ${badge}${esc(p.name)}<br><span class="muted small">${esc(p.dept||'')}${p.out?' · ตกรอบ':''}</span><br>${Number(state.round)===3?lfUsed(p):''}</button>`}).join('')
+    ||'<span class="muted small">ยังไม่มีรายชื่อ ไปที่โหมดตั้งค่าเพื่อเพิ่ม</span>';
+  $('r-players').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
+    const n=+b.dataset.p;sel.has(n)?sel.delete(n):sel.add(n);renderRemote()});
+  const empty=!pool.length;
+  $('r-next').disabled=empty;
+  $('r-start').disabled=!q;
+  $('r-reveal').disabled=!q;
+  $('r-top').className='msg small'+(empty||!isAdmin?' err':'');
+  $('r-top').textContent=lastErr?('อ่านข้อมูลไม่สำเร็จ '+lastErr):!isAdmin?'ยังไม่ได้เข้าสู่ระบบทีมงาน กดเปลี่ยนโหมดแล้วเข้าสู่ระบบก่อน จึงจะกดปุ่มได้'
+    :empty?'ยังไม่มีคำถามในรอบนี้ ไปที่โหมดตั้งค่า แล้วกดใส่ชุดคำถามตัวอย่างหรือเพิ่มคำถามเอง':
+     (left===0?'คำถามรอบนี้ถูกใช้ครบแล้ว เพิ่มคำถามหรือกดรีเซ็ตเกมในโหมดตั้งค่า':'');
+  $('r-hint').disabled=!(q&&(q.hints||[]).length);
+  const rr=Number(state.round)||1;
+  $('r-live-ctl').style.display='none';
+  $('r-turn-ctl').style.display=rr===3?'':'none';
+  $('r-score-ctl').style.display='';
+  $('r-tie-panel').style.display=rr===3?'none':'';
+  const lfp=document.getElementById('r-lf-panel');if(lfp)lfp.style.display=rr===3?'':'none';
+  $('r-score-h').textContent='ให้คะแนน';
+  $('r-score-hint').innerHTML=(rr===1?'ทุกทีมเขียน A-D พร้อมกัน ':rr===2?'ทุกทีมเขียนคำตอบพร้อมกัน ':'ทีมที่ถึงคิวตอบ ')
+    +'เลือกทีมที่ตอบถูก แล้วกดให้คะแนน (รอบนี้ข้อละ <span id="r-pts">'+(ROUNDS[rr]||ROUNDS[1]).pts+'</span> คะแนน)';
+  if(rr===3){const tn=currentTurn();const tp=(state.players||[]).find(x=>x.n===tn);
+    $('r-turn-now').textContent=tp?('คิวนี้: '+tp.name):'ยังไม่มีทีมในคิว';}
+  const lfs=$('lf-sec');if(lfs&&document.activeElement!==lfs)lfs.value=lfSec();
+  const per=Math.max(1,Number(state.lfPerTeam)||1);
+  const selN=[...sel][0],selP=(state.players||[]).find(x=>x.n===selN);
+  $('lf-info').textContent=selP
+    ?`${selP.name}: ใช้ตัวช่วยไปแล้ว ${Number(selP.lfSpins)||0} จาก ${per} ครั้ง`
+    :`ทีมจับฉลากเอง · ระบบจับเวลา ${lfSec()} วินาที · ใช้ได้ทีมละ ${per} ครั้ง`;
+  renderPollCounts();
+  if(rr!==3)renderTieInputs();
+}
+function renderOverlay(){
+  const lk=state?.lucky,lf=state?.lifeline;
+  $('ov').classList.toggle('on',!!(lk||lf)&&role==='stage');
+  if(role!=='stage')return;
+  $('ov').style.background=lk?'rgba(8,7,5,.985)':'';
+  if(lk){
+    $('ov-kind').textContent='ของรางวัลผู้ชม';
+    $('ov-sub').textContent=lk.prize?('รางวัล: '+lk.prize):'ขอแสดงความยินดี';
+    return;
+  }
+  if(!lf)return;
+  const p=(state.players||[]).find(x=>x.n===lf.player);
+  $('ov-kind').textContent='ตัวช่วยชีวิต';
+  $('ov-who').textContent=p?p.name:'';
+  $('ov-sub').textContent='จับฉลากเลือกตัวช่วย แล้วใช้ภายในเวลาที่กำหนด';
+}
+function tickTimers(){
+  if(!state)return;
+  if(role==='stage'&&state.phase==='ask'&&(state.endsAt||state.paused!=null)&&!state.showScores&&!state.winner){
+    const total=secOf(state.round);
+    const left=state.paused!=null?Math.max(0,state.paused/1000):Math.max(0,(state.endsAt-Date.now())/1000);
+    const box=$('s-timer');box.hidden=false;
+    box.querySelector('i').style.width=Math.min(100,left/total*100)+'%';
+    box.querySelector('.num').textContent=state.paused!=null?(Math.ceil(left)+' ⏸'):Math.ceil(left);
+    box.classList.toggle('hot',left<=5&&state.paused==null);
+  }
+  const lk=state.lucky;
+  if(lk&&role==='stage'){
+    const rolling=Date.now()<(lk.at||0)+2600,pool=lk.pool&&lk.pool.length?lk.pool:[lk.name];
+    $('ov-who').textContent=rolling?pool[Math.floor(Math.random()*pool.length)]:lk.name;
+    $('ov-cd').textContent=rolling?'กำลังสุ่ม…':'ยินดีด้วย!';
+    return;
+  }
+  const lf=state.lifeline;
+  if(lf&&lf.endsAt){
+    const l=Math.max(0,Math.ceil((lf.endsAt-Date.now())/1000));
+    $('ov-cd').textContent=l?l+' วินาที':'หมดเวลา';
+  } else $('ov-cd').textContent='';
+}
+setInterval(tickTimers,200);
+
+/* ---------- remote actions ---------- */
+$('r-reload').onclick=reloadData;
+$('r-sec').onchange=e=>{
+  const v=Math.max(5,Math.min(180,+e.target.value||0));
+  saveState({secs:{...(state.secs||{}),[state.round]:v}});
+  msg('r-msg',`ตั้งเวลารอบนี้เป็น ${v} วินาที`);
+};
+$('r-start-game').onclick=()=>{saveState({started:true,winner:null});msg('r-msg','เริ่มเกมแล้ว จอหลักขึ้นสถานะกำลังแข่ง')};
+$('r-end-game').onclick=()=>{saveState({started:false,phase:'idle',endsAt:0});msg('r-msg','หยุดเกมแล้ว จอหลักกลับไปหน้ารอเริ่ม')};
+$('r-round').onchange=e=>{
+  const rn=+e.target.value;
+  const prev={};(state.players||[]).forEach(p=>prev[p.n]=p.score||0);
+  saveState({round:rn,qid:null,phase:'idle',hintShown:0,endsAt:0,paused:null,showScores:false,poll:null,
+    prevScores:prev,players:(state.players||[]).map(p=>({...p,score:0}))});
+  msg('r-msg','เข้ารอบ '+(rn===3?'ชิงชนะเลิศ':'ที่ '+rn)+' · รีเซ็ตคะแนนทุกทีมเป็น 0 แล้ว (กด "คืนคะแนนก่อนรีเซ็ต" ถ้าพลาด)');
+};
+$('r-next').onclick=()=>{
+  const pool=bank.filter(x=>Number(x.round)===(Number(state.round)||1)&&!(state.asked||[]).includes(x.id));
+  if(!pool.length){msg('r-msg','คำถามรอบนี้หมดแล้ว เพิ่มคำถามในโหมดตั้งค่า');return}
+  showQuestion(pool[Math.floor(Math.random()*pool.length)]);
+};
+function showQuestion(q){
+  saveState({started:true,qid:q.id,phase:'idle',endsAt:0,paused:null,hintShown:0,showScores:false,
+    asked:[...new Set([...(state.asked||[]),q.id])],
+    poll:{id:uid(),open:true,show:false,mode:(q.choices&&q.choices.length)?'choice':'text',qid:q.id}});
+}
+$('r-pick-go').onclick=()=>{
+  const id=$('r-pick').value,q=bank.find(x=>x.id===id);
+  if(!q){msg('r-msg','เลือกข้อก่อน');return}
+  showQuestion(q);msg('r-msg','ขึ้นคำถามแล้ว กดเริ่มจับเวลาเมื่อพร้อม');
+};
+$('r-scores').onclick=()=>saveState({showScores:!state.showScores});
+function voterNames(){
+  const seen=new Map();
+  (votes||[]).forEach(v=>{const n=(v.name||'').trim();if(n)seen.set(n.toLowerCase(),n)});
+  return [...seen.values()];
+}
+$('lk-draw').onclick=()=>{
+  const won=(state.luckyWon||[]).map(x=>String(x).toLowerCase());
+  const pool=voterNames().filter(n=>!won.includes(n.toLowerCase()));
+  if(!pool.length){msg('r-msg',voterNames().length?'ผู้ร่วมโหวตทุกคนได้รางวัลครบแล้ว':'ยังไม่มีผู้ชมใส่ชื่อไว้');return}
+  const name=pool[Math.floor(Math.random()*pool.length)];
+  saveState({lucky:{name,prize:$('lk-prize').value.trim().slice(0,60),at:Date.now(),pool:pool.slice(0,30)},
+    luckyWon:[...(state.luckyWon||[]),name]});
+  msg('r-msg','ผู้โชคดีคือ '+name+' (ขึ้นจอหลักแล้ว)');
+};
+$('lk-close').onclick=()=>saveState({lucky:null});
+$('lk-reset').onclick=()=>{saveState({luckyWon:[]});msg('r-msg','ล้างรายชื่อผู้ถูกรางวัลแล้ว')};
+$('r-pause').onclick=()=>{
+  if(state.phase!=='ask'){msg('r-msg','ยังไม่ได้เริ่มจับเวลา');return}
+  if(state.paused!=null){saveState({endsAt:Date.now()+state.paused,paused:null});msg('r-msg','เดินเวลาต่อแล้ว')}
+  else{saveState({paused:Math.max(0,(state.endsAt||0)-Date.now()),endsAt:0});msg('r-msg','หยุดเวลาแล้ว กดอีกครั้งเพื่อเดินต่อ')}
+};
+$('r-undo-reset').onclick=()=>{
+  const prev=state.prevScores||null;if(!prev){msg('r-msg','ไม่มีคะแนนเดิมให้คืน');return}
+  saveState({players:(state.players||[]).map(p=>({...p,score:Number(prev[p.n])||0})),prevScores:null});
+  msg('r-msg','คืนคะแนนก่อนรีเซ็ตแล้ว');
+};
+$('r-start').onclick=()=>{
+  if(!curQ()){msg('r-msg','เลือกคำถามก่อน');return}
+  saveState({phase:'ask',endsAt:Date.now()+(secOf(state.round)*1000),showScores:false,paused:null});
+};
+$('r-reveal').onclick=()=>saveState({phase:'reveal',endsAt:0,paused:null,
+  poll:state.poll?{...state.poll,open:false,show:true}:null});
+$('r-hint').onclick=()=>{const q=curQ();if(!q)return;saveState({hintShown:Math.min((q.hints||[]).length,(state.hintShown||0)+1)})};
+function score(delta){
+  if(!sel.size){msg('r-msg','เลือกผู้แข่งก่อน');return}
+  const pts=(ROUNDS[state.round]||ROUNDS[1]).pts*delta;
+  saveState({players:(state.players||[]).map(p=>sel.has(p.n)?{...p,score:(p.score||0)+pts}:p)});
+  sel.clear();
+}
+$('r-wrong').onclick=()=>{
+  if(!sel.size){msg('r-msg','เลือกผู้แข่งที่ตอบผิดก่อน');return}
+  const players=(state.players||[]).map(p=>{
+    if(!sel.has(p.n)||p.out)return p;
+    const lives=Math.max(0,(p.lives==null?LIVES:p.lives)-1);
+    return {...p,lives,out:lives<=0};
+  });
+  const left=players.filter(p=>!p.out).length;
+  saveState({players});sel.clear();
+  msg('r-msg',left<=5?`เหลือ ${left} คนแล้ว กดจบรอบได้เลย`:`เหลือ ${left} คน`);
+};
+$('r-turn-ok').onclick=()=>{
+  const cur=currentTurn();if(cur==null){msg('r-msg','ไม่มีทีมที่ยังแข่งอยู่');return}
+  saveState({turn:nextAfter(cur,state.players)});
+};
+$('r-turn-bad').onclick=()=>{
+  const cur=currentTurn();if(cur==null)return;
+  const players=(state.players||[]);
+  const nx=nextAfter(cur,players);
+  const left=players.filter(p=>!p.out).length;
+  saveState({players,turn:nx});
+  msg('r-msg',`ตกรอบแล้ว เหลือ ${left} ทีม`);
+};
+$('r-turn-set').onclick=()=>{
+  const n=[...sel][0];if(n==null){msg('r-msg','เลือกทีมก่อน');return}
+  saveState({turn:n});sel.clear();
+};
+function openPoll(mode){saveState({poll:{id:uid(),open:true,show:false,mode,qid:state.qid||null}});msg('r-msg','เปิดรับโหวตแล้ว ('+(mode==='text'?'พิมพ์ตอบ':'A-D')+') ผลจะขึ้นจอตอนกดเฉลย')}
+$('poll-open').onclick=()=>openPoll('choice');
+$('poll-open-text').onclick=()=>openPoll('text');
+$('v-send').onclick=()=>castText();
+$('v-text').addEventListener('keydown',e=>{if(e.key==='Enter')castText()});
+$('poll-close').onclick=()=>{if(!state.poll)return;saveState({poll:{...state.poll,open:false}})};
+$('poll-hide').onclick=()=>{if(!state.poll)return;saveState({poll:{...state.poll,show:!state.poll.show}})};
+$('r-revive').onclick=()=>{
+  if(!sel.size){msg('r-msg','เลือกผู้แข่งก่อน');return}
+  saveState({players:(state.players||[]).map(p=>sel.has(p.n)?{...p,out:false,lives:Math.max(1,p.lives==null?LIVES:p.lives)}:p)});
+  sel.clear();
+};
+function renderTieInputs(){
+  const box=$('tie-inputs');const list=alive();
+  const cur=(state.tie&&state.tie.guesses)||{};
+  box.innerHTML=list.map(p=>`<div><label class="f">${esc(p.name)}</label><input type="number" data-tie="${p.n}" value="${cur[p.n]??''}"></div>`).join('')
+    ||'<span class="muted small">ยังไม่มีผู้แข่ง</span>';
+}
+$('tie-show').onclick=()=>saveState({tie:{show:true,q:$('tie-q').value.trim(),guesses:(state.tie&&state.tie.guesses)||{}}});
+$('tie-clear').onclick=()=>{saveState({tie:null});$('tie-result').textContent=''};
+$('tie-calc').onclick=()=>{
+  const ans=parseFloat($('tie-ans').value);
+  if(isNaN(ans)){msg('r-msg','ใส่คำตอบที่ถูกเป็นตัวเลขก่อน');return}
+  const guesses={};
+  $('tie-inputs').querySelectorAll('[data-tie]').forEach(i=>{if(i.value!=='')guesses[i.dataset.tie]=parseFloat(i.value)});
+  const rank=alive().map(p=>({p,g:guesses[p.n],d:guesses[p.n]==null?Infinity:Math.abs(guesses[p.n]-ans)}))
+    .sort((a,b)=>a.d-b.d);
+  $('tie-result').innerHTML='<b>ใกล้ที่สุดตามลำดับ</b><br>'+rank.map((r,i)=>
+    `${i+1}. ${esc(r.p.name)} — ตอบ ${r.g==null?'ไม่ได้ตอบ':r.g} (ห่าง ${r.d===Infinity?'-':r.d})`).join('<br>');
+  saveState({tie:{show:true,q:$('tie-q').value.trim(),guesses}});
+};
+$('r-award').onclick=()=>score(1);
+$('r-minus').onclick=()=>score(-1);
+$('r-toggle-out').onclick=()=>{
+  if(!sel.size){msg('r-msg','เลือกผู้แข่งก่อน');return}
+  saveState({players:(state.players||[]).map(p=>sel.has(p.n)?{...p,out:!p.out}:p)});sel.clear();
+};
+function startLifeline(){
+  if(Number(state.round)!==3){msg('r-msg','ตัวช่วยใช้ได้เฉพาะรอบชิงชนะเลิศ');return}
+  const n=[...sel][0];
+  if(n==null){msg('r-msg','เลือกทีมที่ขอใช้ตัวช่วยก่อน');return}
+  const p=(state.players||[]).find(x=>x.n===n);
+  const per=Math.max(1,Number(state.lfPerTeam)||1);
+  if(p&&(Number(p.lfSpins)||0)>=per){msg('r-msg',p.name+' ใช้ตัวช่วยครบ '+per+' ครั้งแล้ว');return}
+  const sec=Math.max(5,Math.min(300,+$('lf-sec').value||lfSec()));
+  const now=Date.now();
+  const players=(state.players||[]).map(x=>x.n===n?{...x,lfSpins:(Number(x.lfSpins)||0)+1}:x);
+  const freeze=(state.phase==='ask'&&state.paused==null&&state.endsAt)?{paused:Math.max(0,state.endsAt-now),endsAt:0}:{};
+  saveState({lfSec:sec,lifeline:{player:n,sec,at:now,endsAt:now+sec*1000},players,...freeze});
+  sel.clear();
+  msg('r-msg',(p?p.name:'')+' ใช้ตัวช่วย · จับเวลา '+sec+' วินาที');
+}
+$('lf-start').onclick=startLifeline;
+$('lf-close').onclick=()=>{
+  const resume=(state.phase==='ask'&&state.paused!=null)?{endsAt:Date.now()+state.paused,paused:null}:{};
+  saveState({lifeline:null,...resume});
+  if(resume.endsAt)msg('r-msg','ปิดกล่องตัวช่วยและเดินเวลาต่อแล้ว');
+};
+function cutTo(k){
+  const rr=Number(state.round)||1;
+  const rank=[...(state.players||[])].filter(p=>!p.out).sort((a,b)=>(b.score||0)-(a.score||0));
+  const keep=new Set(rank.slice(0,k).map(p=>p.n));
+  const tieWarn=rank.length>k&&(rank[k-1].score||0)===(rank[k].score||0);
+  const prev={};(state.players||[]).forEach(p=>prev[p.n]=p.score||0);
+  saveState({players:(state.players||[]).map(p=>({...p,out:p.out||!keep.has(p.n),score:0})),
+    round:Math.min(3,rr+1),qid:null,phase:'idle',endsAt:0,paused:null,hintShown:0,tie:null,poll:null,
+    showScores:false,prevScores:prev,turn:null});
+  if(tieWarn)msg('r-msg',`คะแนนอันดับ ${k} เท่ากัน ควรใช้ข้อตัดสินก่อน (กดคืนสิทธิ์แล้วตัดสินใหม่ได้)`);
+  else msg('r-msg',`เหลือ ${k} ทีม ขึ้นรอบถัดไปและรีเซ็ตคะแนนเป็น 0 แล้ว`);
+}
+$('r-cut5').onclick=()=>cutTo(5);
+$('r-cut3').onclick=()=>cutTo(3);
+$('r-winner').onclick=()=>{
+  const rank=alive().sort((a,b)=>(b.score||0)-(a.score||0));
+  if(!rank.length){msg('r-msg','ยังไม่มีผู้แข่ง');return}
+  saveState({winner:rank[0].n,phase:'reveal',lifeline:null});
+  msg('r-msg','ประกาศผู้ชนะขึ้นจอแล้ว');
+};
+
+/* ---------- setup ---------- */
+function fillSetup(){
+  $('c-players').value=(state?.players||[]).map(p=>p.name+(p.dept?', '+p.dept:'')).join('\n');
+  $('c-lf-sec').value=lfSec();
+  $('c-lf-per').value=Math.max(1,Number(state?.lfPerTeam)||1);
+  renderBankList();
+}
+let empAll=[],empSel=new Set();
+$('c-load-emp').onclick=async()=>{
+  msg('c-msg','กำลังดึงรายชื่อ...');
+  try{
+    const snap=await getDocs(collection(fs,'employees'));
+    empAll=snap.docs.map(d=>({id:d.id,name:d.data().name||'',dept:d.data().dept||''})).filter(e=>e.name);
+    if(!empAll.length){msg('c-msg','ยังไม่มีรายชื่อในระบบ นำเข้าที่เว็บวงล้อก่อน');return}
+    $('c-search').hidden=false;$('c-emp-act').hidden=false;renderEmp();msg('c-msg',`ดึงมา ${empAll.length} รายชื่อ`);
+  }catch(e){msg('c-msg','ดึงไม่สำเร็จ ต้องเข้าสู่ระบบทีมงานก่อน')}
+};
+function renderEmp(){
+  const q=$('c-search').value.trim().toLowerCase();
+  const list=empAll.filter(e=>!q||(e.name+' '+e.dept+' '+e.id).toLowerCase().includes(q)).slice(0,60);
+  $('c-emp-list').innerHTML=list.map(e=>`<button class="pbtn ${empSel.has(e.id)?'sel':''}" data-emp="${esc(e.id)}">
+    ${esc(e.name)}<br><span class="muted small">${esc(e.dept)} ${esc(e.id)}</span></button>`).join('')
+    ||'<span class="muted small">ไม่พบรายชื่อที่ตรงกัน</span>';
+  $('c-emp-list').querySelectorAll('[data-emp]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.emp;empSel.has(id)?empSel.delete(id):empSel.add(id);renderEmp()});
+  $('c-emp-count').textContent=`เลือกแล้ว ${empSel.size} คน`;
+}
+$('c-search').oninput=renderEmp;
+$('c-emp-add').onclick=()=>{
+  const cur=$('c-players').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  const add=empAll.filter(e=>empSel.has(e.id)).map(e=>e.name+(e.dept?', '+e.dept:''));
+  const merged=[...new Set([...cur,...add])].slice(0,10);
+  $('c-players').value=merged.join('\n');
+  empSel.clear();renderEmp();
+  msg('c-msg',`รายชื่อในช่องตอนนี้ ${merged.length} คน กดบันทึกเพื่อยืนยัน`);
+};
+$('c-save-lf').onclick=()=>{
+  const sec=Math.max(5,Math.min(300,+$('c-lf-sec').value||20));
+  saveState({lfSec:sec,lfPerTeam:Math.max(1,Math.min(5,+$('c-lf-per').value||1)),
+    players:(state.players||[]).map(p=>({...p,used:{},lfSpins:0}))});
+  msg('c-msg',`บันทึกแล้ว จับเวลาตัวช่วย ${sec} วินาที (ล้างประวัติการใช้ของทุกทีม)`);
+};
+$('c-save-players').onclick=()=>{
+  const list=$('c-players').value.split('\n').map(l=>l.trim()).filter(Boolean).slice(0,10).map((l,i)=>{
+    const [name,dept]=l.split(',');return {n:i+1,name:(name||'').trim(),dept:(dept||'').trim(),score:0,lives:LIVES,out:false,used:{},lfSpins:0}});
+  saveState({players:list,winner:null});msg('c-msg',`บันทึก ${list.length} คนแล้ว`);
+};
+$('q-round').onchange=()=>{$('q-choice-box').style.display=$('q-round').value==='1'?'':'none'};
+$('q-add').onclick=()=>{
+  const round=+$('q-round').value,q=$('q-text').value.trim(),ans=$('q-ans').value.trim();
+  if(!q||!ans){msg('c-msg','ใส่คำถามและคำตอบก่อน');return}
+  const choices=round===1?[$('q-a').value,$('q-b').value,$('q-c').value,$('q-d').value].map(s=>s.trim()):null;
+  if(round===1&&choices.some(c=>!c)){msg('c-msg','รอบ 1 ต้องใส่ตัวเลือกครบ 4 ข้อ');return}
+  const hints=$('q-hints').value.split('|').map(s=>s.trim()).filter(Boolean);
+  const img=$('q-img').value.trim();
+  saveBank([...bank,{id:uid(),round,q,choices,ans,hints,img}]);
+  ['q-text','q-a','q-b','q-c','q-d','q-ans','q-hints','q-img'].forEach(i=>$(i).value='');
+  msg('c-msg','เพิ่มคำถามแล้ว');renderBankList();
+};
+/* นำเข้าคำถามจาก Excel */
+function parseRows(text){
+  text=text.replace(/^\uFEFF/,'');
+  const lines=text.split(/\r?\n/).filter(l=>l.trim()!=='');if(!lines.length)return[];
+  const d=lines[0].includes('\t')?'\t':',';
+  return lines.map(line=>{if(d==='\t')return line.split('\t');
+    const out=[];let cur='',qq=false;
+    for(let i=0;i<line.length;i++){const c=line[i];
+      if(qq){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++}else qq=false}else cur+=c}
+      else if(c==='"')qq=true;else if(c===','){out.push(cur);cur=''}else cur+=c}
+    out.push(cur);return out});
+}
+function importRows(rows){
+  rows=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(c=>c));
+  if(rows.length<2){msg('imp-msg','ไม่พบข้อมูล ต้องมีแถวหัวคอลัมน์และข้อมูลอย่างน้อย 1 แถว');return}
+  const h=rows[0].map(x=>x.toLowerCase());
+  const f=re=>h.findIndex(x=>re.test(x));
+  const col={r:f(/รอบ|round/),q:f(/คำถาม|question/),
+    a:f(/^a$|ตัวเลือก ?a/),b:f(/^b$|ตัวเลือก ?b/),c:f(/^c$|ตัวเลือก ?c/),d:f(/^d$|ตัวเลือก ?d/),
+    ans:f(/เฉลย|คำตอบ|answer/),hint:f(/ใบ้|hint/),img:f(/รูป|ภาพ|image|img/)};
+  if(col.q<0||col.ans<0){msg('imp-msg','ต้องมีคอลัมน์ คำถาม และ เฉลย ในแถวแรก');return}
+  const add=[];let skip=0;
+  rows.slice(1).forEach(r=>{
+    const qt=(r[col.q]||'').trim(),ans=(r[col.ans]||'').trim();
+    if(!qt||!ans){skip++;return}
+    const round=Math.min(3,Math.max(1,parseInt(r[col.r]||'1',10)||1));
+    const ch=round===1?[col.a,col.b,col.c,col.d].map(i=>i>=0?(r[i]||'').trim():''):null;
+    if(round===1&&ch.some(x=>!x)){skip++;return}
+    const hints=col.hint>=0?(r[col.hint]||'').split('|').map(x=>x.trim()).filter(Boolean):[];
+    add.push({id:uid(),round,q:qt,choices:ch,ans,hints,img:col.img>=0?(r[col.img]||'').trim():''});
+  });
+  if(!add.length){msg('imp-msg','นำเข้าไม่สำเร็จ ตรวจรูปแบบคอลัมน์อีกครั้ง');return}
+  saveBank([...bank,...add]);renderBankList();
+  msg('imp-msg',`นำเข้า ${add.length} ข้อแล้ว${skip?` (ข้าม ${skip} แถวที่ข้อมูลไม่ครบ)`:''}`);
+  $('imp-paste').value='';
+}
+$('imp-paste-btn').onclick=()=>{
+  const t=$('imp-paste').value;
+  if(!t.trim()){msg('imp-msg','วางข้อมูลจาก Excel ก่อน');return}
+  importRows(parseRows(t));
+};
+$('imp-file-btn').onclick=()=>$('imp-file').click();
+$('imp-file').onchange=async e=>{
+  const file=e.target.files[0];if(!file)return;
+  try{
+    if(/\.xlsx?$/i.test(file.name)){
+      if(!window.XLSX)throw new Error();
+      const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+      importRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}));
+    }else importRows(parseRows(await file.text()));
+  }catch(err){msg('imp-msg','อ่านไฟล์ไม่สำเร็จ ลองบันทึกเป็น CSV UTF-8 แล้วอัปโหลดใหม่')}
+  e.target.value='';
+};
+$('q-sample').onclick=()=>{saveBank([...bank,...SAMPLE.map(s=>({...s,id:uid()}))]);msg('c-msg','ใส่ชุดตัวอย่างแล้ว');renderBankList()};
+function renderBankList(){
+  $('q-count').textContent=bank.length;
+  $('q-list').innerHTML=bank.length?bank.map(q=>`<div class="qrow">
+    <span class="tag">R${q.round}</span>
+    <span>${esc(q.q)}<br><span class="muted small">เฉลย ${esc(answerText(q))}${q.img?' · มีรูป':''}</span></span>
+    <button data-del="${q.id}" style="color:var(--bad)">ลบ</button></div>`).join('')
+    :'<p class="muted small">ยังไม่มีคำถาม กดปุ่มใส่ชุดตัวอย่างเพื่อเริ่มทดลอง</p>';
+  $('q-list').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>saveBank(bank.filter(x=>x.id!==b.dataset.del)));
+}
+$('c-reset').onclick=()=>{
+  saveState({round:1,qid:null,phase:'idle',endsAt:0,hintShown:0,asked:[],lifeline:null,winner:null,tie:null,turn:null,poll:null,
+    players:(state.players||[]).map(p=>({...p,score:0,lives:LIVES,out:false,used:{},lfSpins:0}))});
+  msg('c-msg','รีเซ็ตเกมแล้ว (คลังคำถามยังอยู่)');
+};
+
+boot();
+})();
+</script>
+</body>
+</html>
